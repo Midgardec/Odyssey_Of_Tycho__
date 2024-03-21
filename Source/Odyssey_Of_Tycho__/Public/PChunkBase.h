@@ -13,6 +13,7 @@
 
 
 class FastNoiseLite;
+class APlanetBase;
 class UProceduralMeshComponent;
 
 UCLASS()
@@ -32,17 +33,19 @@ public:
 	bool bMeshCleared = false;
 	void RegenerateChunk();
 	
-	UPROPERTY(EditDefaultsOnly, Category="Chunk")
-	int Size = 64;
-	UPROPERTY(EditDefaultsOnly, Category="Chunk")
+	/*UPROPERTY(EditDefaultsOnly, Category="Chunk")
+	int Size = 64;*/
+	UPROPERTY(EditDefaultsOnly, Category="Planet")
+	APlanetBase* Planet;
+	/*UPROPERTY(EditDefaultsOnly, Category="Chunk")
 	FVector Origin = FVector(0, 0, 0);
 	UPROPERTY(EditDefaultsOnly, Category="Chunk")
 	float Radius = 500;
 	UPROPERTY(EditDefaultsOnly, Category="Chunk")
-	float Resolution = 500;
+	float Resolution = 500;*/
 	
-	TObjectPtr<UMaterialInterface> Material;
-	float Frequency;
+	/*TObjectPtr<UMaterialInterface> Material;
+	float Frequency;*/
 	EGenerationType GenerationType;
 
 	UFUNCTION(BlueprintCallable, Category="Chunk")
@@ -50,6 +53,7 @@ public:
 
 	void SetVisible(bool);
 	int VertexCount = 0;
+
 	
 protected:
 	// Called when the game starts or when spawned
@@ -67,7 +71,6 @@ protected:
 	FastNoiseLite* Noise;
 	FChunkMeshData MeshData;
 	
-
 	
 private:
 	void ApplyMesh();

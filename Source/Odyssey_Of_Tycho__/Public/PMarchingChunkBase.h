@@ -23,6 +23,7 @@ protected:
 	virtual void Generate2DHeightMap(FVector Position) override;
 	virtual void Generate3DHeightMap(FVector Position) override;
 	virtual void GenerateMesh() override;
+	FColor setColorsToVertex(UE::Math::TVector<double> v1) const;
 
 	bool pointInSphere(int x, int y, int z);
 private:

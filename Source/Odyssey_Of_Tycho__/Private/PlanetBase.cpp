@@ -23,8 +23,10 @@ void APlanetBase::BeginPlay()
 {
 	Super::BeginPlay();
 	Origin = this->GetActorLocation() + FVector(Size * Resolution /2, Size * Resolution/2 , Size * Resolution/2 );
-	//Origin = this->GetActorLocation();
+
+/// Radius calculating to fit chunks
 	Radius = FMath::Clamp(Radius, Resolution, (DrawDistance*2+1)*Size*Resolution/2 - Resolution);
+
 	GEngine->AddOnScreenDebugMessage(-1,15.f,FColor::Silver, FString::Printf(TEXT("Radius: %i"),Radius));
 	switch (GenerationType)
 	{
@@ -95,13 +97,7 @@ void APlanetBase::Generate3DWorld()
 				);
 
 				chunk->GenerationType = EGenerationType::GT_3D;
-				chunk->Frequency = Frequency;
-				chunk->Material = Material;
-				chunk->Size = Size;
-				chunk->Radius = Radius;
-				chunk->Origin = Origin;
-				chunk->Resolution = Resolution;
-
+				chunk->Planet = this;
 				chunks.Add(chunk);
 				UGameplayStatics::FinishSpawningActor(chunk, transform);
 
@@ -130,9 +126,7 @@ void APlanetBase::Generate2DWorld()
 			);
 
 			chunk->GenerationType = EGenerationType::GT_2D;
-			chunk->Frequency = Frequency;
-			chunk->Material = Material;
-			chunk->Size = Size;
+			
 
 			UGameplayStatics::FinishSpawningActor(chunk, transform);
 

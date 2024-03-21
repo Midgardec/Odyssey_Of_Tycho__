@@ -51,24 +51,32 @@ public:
 
 	UPROPERTY(EditInstanceOnly, Category="Chunk")
 	FVector Origin = FVector(0,0,0);
-
+	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	float LOD0;
+	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	float LOD1;
+	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	float LOD2;
+	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	float LOD3;
+	
 	UPROPERTY(EditInstanceOnly, Category="Planet|Water|Level")
-	float TerainLevel_Water;
+	float TerrainLevel_Water;
 	UPROPERTY(EditInstanceOnly, Category="Planet|Low Ground|Level")
-	float TerainLevel_Low;
+	float TerrainLevel_Low;
 	UPROPERTY(EditInstanceOnly, Category="Planet|High Ground|Level")
-	float TerainLevel_High;
+	float TerrainLevel_High;
 	UPROPERTY(EditInstanceOnly, Category="Planet|Top Ground|Level")
-	float TerainLevel_Top;
+	float TerrainLevel_Top;
 	
 	UPROPERTY(EditInstanceOnly, Category="Planet|Water|Color")
-	FColor TerainColor_Water;
+	FColor TerrainColor_Water;
 	UPROPERTY(EditInstanceOnly, Category="Planet|Low Ground|Color")
-	FColor TerainColor_Low;
+	FColor TerrainColor_Low;
 	UPROPERTY(EditInstanceOnly, Category="Planet|High Ground|Color")
-	FColor TerainColor_High;
+	FColor TerrainColor_High;
 	UPROPERTY(EditInstanceOnly, Category="Planet|Top Ground|Color")
-	FColor TerainColor_Top;
+	FColor TerrainColor_Top;
 	
 	int64 VertexSum;
 protected:

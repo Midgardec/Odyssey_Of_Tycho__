@@ -5,31 +5,33 @@
 
 
 #include "FastNoiseLite.h"
+#include "PlanetBase.h"
 #include "ProceduralMeshComponent.h"
 
 void APMarchingChunkBase::Setup()
 {
 	// Initialize Voxels
-	Voxels.SetNum((Size + 1) * (Size + 1) * (Size + 1));
+	Voxels.SetNum((Planet->Size + 1) * (Planet->Size + 1) * (Planet->Size + 1));
 }
 
 void APMarchingChunkBase::Generate2DHeightMap(const FVector Position)
 {
-	for (int x = 0; x <= Size; x++)
+	for (int x = 0; x <= Planet->Size; x++)
 	{
-		for (int y = 0; y <= Size; y++)
+		for (int y = 0; y <= Planet->Size; y++)
 		{
 			const float Xpos = x + Position.X;
 			const float ypos = y + Position.Y;
 
-			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise(Xpos, ypos) + 1) * Size / 2), 0, Size);
+			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise(Xpos, ypos) + 1) * Planet->Size / 2), 0,
+			                                Planet->Size);
 
 			for (int z = 0; z < Height; z++)
 			{
 				Voxels[GetVoxelIndex(x, y, z)] = 1.0f;
 			}
 
-			for (int z = Height; z < Size; z++)
+			for (int z = Height; z < Planet->Size; z++)
 			{
 				Voxels[GetVoxelIndex(x, y, z)] = -1.0f;
 			}
@@ -39,16 +41,18 @@ void APMarchingChunkBase::Generate2DHeightMap(const FVector Position)
 
 void APMarchingChunkBase::Generate3DHeightMap(const FVector Position)
 {
-	for (int x = 0; x <= Size; ++x)
+	for (int x = 0; x <= Planet->Size; ++x)
 	{
-		for (int y = 0; y <= Size; ++y)
+		for (int y = 0; y <= Planet->Size; ++y)
 		{
-			for (int z = 0; z <= Size; ++z)
+			for (int z = 0; z <= Planet->Size; ++z)
 			{
-				if (pointInSphere(this->GetActorLocation().X + x * Resolution, this->GetActorLocation().Y + y * Resolution,
-				                  this->GetActorLocation().Z + z * Resolution))
+				if (pointInSphere(this->GetActorLocation().X + x * Planet->Resolution,
+				                  this->GetActorLocation().Y + y * Planet->Resolution,
+				                  this->GetActorLocation().Z + z * Planet->Resolution))
 				{
-					Voxels[GetVoxelIndex(x, y, z)] = Voxels[GetVoxelIndex(x, y, z)] = 1;//Noise->GetNoise(x + Position.X, y + Position.Y, z + Position.Z);
+					Voxels[GetVoxelIndex(x, y, z)] = Noise->GetNoise(
+						x + Position.X, y + Position.Y, z + Position.Z);
 				}
 				else
 				{
@@ -62,12 +66,12 @@ void APMarchingChunkBase::Generate3DHeightMap(const FVector Position)
 
 bool APMarchingChunkBase::pointInSphere(int x, int y, int z)
 {
-	float dx = x - this->Origin.X;
-	float dy = y - this->Origin.Y;
-	float dz = z - this->Origin.Z;
+	float dx = x - Planet->Origin.X;
+	float dy = y - Planet->Origin.Y;
+	float dz = z - Planet->Origin.Z;
 
 	float distance = FMath::Sqrt(dx * dx + dy * dy + dz * dz);
-	return distance <= Radius + Resolution/2;
+	return distance <= Planet->Radius + Planet->Resolution / 2;
 }
 
 void APMarchingChunkBase::GenerateMesh()
@@ -88,11 +92,11 @@ void APMarchingChunkBase::GenerateMesh()
 
 	float Cube[8];
 
-	for (int X = 0; X < Size; ++X)
+	for (int X = 0; X < Planet->Size; ++X)
 	{
-		for (int Y = 0; Y < Size; ++Y)
+		for (int Y = 0; Y < Planet->Size; ++Y)
 		{
-			for (int Z = 0; Z < Size; ++Z)
+			for (int Z = 0; Z < Planet->Size; ++Z)
 			{
 				for (int i = 0; i < 8; ++i)
 				{
@@ -107,6 +111,33 @@ void APMarchingChunkBase::GenerateMesh()
 	bMeshGenerated = true;
 }
 
+FColor APMarchingChunkBase::setColorsToVertex(FVector v1) const
+{
+	float distance = FVector::Dist(this->GetActorLocation() + v1, Planet->Origin);
+	/*GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red,
+	                                 FString::Printf(
+		                                 TEXT(
+			                                 "Radius: %d, Origin.X: %f, Origin.Y: %f, Origin.Z: %f, V.X: %f, V.Y: %f, V.Z: %f,distance: %f"),
+		                                 Planet->Radius, Planet->Origin.X,
+		                                 Planet->Origin.Y, Planet->Origin.Z, v1.X, v1.Y, v1.Z, distance));*/
+	if (distance < Planet->TerrainLevel_Water * Planet->Radius)
+	{
+		return Planet->TerrainColor_Water;
+	}
+	if (distance < Planet->TerrainLevel_Low * Planet->Radius)
+	{
+		return Planet->TerrainColor_Low;
+	}
+	if (distance < Planet->TerrainLevel_High * Planet->Radius)
+	{
+		return Planet->TerrainColor_High;
+	}
+	if (distance < Planet->TerrainLevel_Top * Planet->Radius)
+	{
+		return Planet->TerrainColor_Top;
+	}
+	return FColor::Black;
+}
 
 void APMarchingChunkBase::March(const int X, const int Y, const int Z, const float Cube[8])
 {
@@ -143,14 +174,11 @@ void APMarchingChunkBase::March(const int X, const int Y, const int Z, const flo
 	{
 		if (TriangleConnectionTable[VertexMask][3 * i] < 0) break;
 
-		auto V1 = EdgeVertex[TriangleConnectionTable[VertexMask][3 * i]] * Resolution;
-		auto V2 = EdgeVertex[TriangleConnectionTable[VertexMask][3 * i + 1]] * Resolution;
-		auto V3 = EdgeVertex[TriangleConnectionTable[VertexMask][3 * i + 2]] * Resolution;
+		auto V1 = EdgeVertex[TriangleConnectionTable[VertexMask][3 * i]] * Planet->Resolution;
+		auto V2 = EdgeVertex[TriangleConnectionTable[VertexMask][3 * i + 1]] * Planet->Resolution;
+		auto V3 = EdgeVertex[TriangleConnectionTable[VertexMask][3 * i + 2]] * Planet->Resolution;
 
 		auto Normal = FVector::CrossProduct(V2 - V1, V3 - V1);
-		auto Color1 = FColor::Green;
-		auto Color2 = FColor::Green;
-		auto Color3 = FColor::Green;
 
 		Normal.Normalize();
 
@@ -169,9 +197,9 @@ void APMarchingChunkBase::March(const int X, const int Y, const int Z, const flo
 		});
 
 		MeshData.Colors.Append({
-			Color1,
-			Color2,
-			Color3
+			setColorsToVertex(V1),
+			setColorsToVertex(V2),
+			setColorsToVertex(V3)
 		});
 
 		VertexCount += 3;
@@ -180,7 +208,7 @@ void APMarchingChunkBase::March(const int X, const int Y, const int Z, const flo
 
 int APMarchingChunkBase::GetVoxelIndex(const int X, const int Y, const int Z) const
 {
-	return Z * (Size + 1) * (Size + 1) + Y * (Size + 1) + X;
+	return Z * (Planet->Size + 1) * (Planet->Size + 1) + Y * (Planet->Size + 1) + X;
 }
 
 float APMarchingChunkBase::GetInterpolationOffset(const float V1, const float V2) const

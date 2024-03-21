@@ -4,7 +4,7 @@
 #include "PChunkBase.h"
 
 #include <stdexcept>
-
+#include <PlanetBase.h>
 #include "FastNoiseLite.h"
 #include "ProceduralMeshComponent.h"
 
@@ -30,7 +30,7 @@ void APChunkBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Noise->SetFrequency(Frequency);
+	Noise->SetFrequency(Planet->Frequency);
 	Noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	Noise->SetFractalType(FastNoiseLite::FractalType_FBm);
 
@@ -71,10 +71,10 @@ void APChunkBase::GenerateHeightMap()
 	switch (GenerationType)
 	{
 	case EGenerationType::GT_3D:
-		Generate3DHeightMap(GetActorLocation() / Resolution);
+		Generate3DHeightMap(GetActorLocation() / Planet->Resolution);
 		break;
 	case EGenerationType::GT_2D:
-		Generate2DHeightMap(GetActorLocation() / Resolution);
+		Generate2DHeightMap(GetActorLocation() / Planet->Resolution);
 		break;
 	default:
 		throw std::invalid_argument("Invalid Generation Type");
@@ -93,7 +93,7 @@ void APChunkBase::ApplyMesh()
 		TArray<FProcMeshTangent>(),
 		true
 	);
-	Mesh->SetMaterial(0, Material);
+	Mesh->SetMaterial(0, Planet->Material);
 	bMeshApplied = true;
 }
 
@@ -106,7 +106,7 @@ void APChunkBase::ClearMesh()
 
 void APChunkBase::ModifyVoxel(const FIntVector Position, const EBlock Block)
 {
-	if (Position.X >= Size || Position.Y >= Size || Position.Z >= Size || Position.X < 0 || Position.Y < 0 || Position.Z
+	if (Position.X >= Planet->Size || Position.Y >= Planet->Size || Position.Z >= Planet->Size || Position.X < 0 || Position.Y < 0 || Position.Z
 		< 0)
 		return;
 
