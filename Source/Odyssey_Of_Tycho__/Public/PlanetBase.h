@@ -42,12 +42,18 @@ public:
 
 	UPROPERTY(EditInstanceOnly, Category="Height Map")
 	float Frequency = 0.03f;
-	
+	UPROPERTY(EditInstanceOnly, Category = "Height Map")
+	float Frequency2 = 0.03f;
+	UPROPERTY(EditInstanceOnly, Category = "Height Map")
+	float Frequency3 = 0.03f;
+
 	// Sets default values for this actor's properties
 	APlanetBase();
 
 	UPROPERTY(EditInstanceOnly, Category="Chunk")
 	int Radius = 500;
+	UPROPERTY(EditInstanceOnly, Category = "Chunk")
+	int TerrainHeight = 500;
 
 	UPROPERTY(EditInstanceOnly, Category="Chunk")
 	FVector Origin = FVector(0,0,0);
@@ -83,8 +89,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-
+	void GenerateChunks();
 private:
+	float timer=0;
+	bool b_CalledGeneration=false;
 	int ChunkCount;
 	TArray<TObjectPtr<APChunkBase>> chunks;
 	TObjectPtr<APawn> Player;

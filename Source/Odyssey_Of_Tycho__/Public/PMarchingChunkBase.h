@@ -21,11 +21,13 @@ public:
 protected:
 	virtual void Setup() override;
 	virtual void Generate2DHeightMap(FVector Position) override;
+	float CalculateValue(int x, int y, int z, FVector Pos);
 	virtual void Generate3DHeightMap(FVector Position) override;
 	virtual void GenerateMesh() override;
-	FColor setColorsToVertex(UE::Math::TVector<double> v1) const;
+	FLinearColor setColorsToVertex(UE::Math::TVector<double> v1) const;
 
 	bool pointInSphere(int x, int y, int z);
+	bool pointInTerrain(int x, int y, int z);
 private:
 	TArray<float> Voxels;
 	int TriangleOrder[3] = {0, 1, 2};

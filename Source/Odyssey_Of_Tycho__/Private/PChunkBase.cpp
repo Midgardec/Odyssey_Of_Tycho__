@@ -17,6 +17,8 @@ APChunkBase::APChunkBase()
 
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
 	Noise = new FastNoiseLite();
+	Noise2 = new FastNoiseLite();
+	Noise3 = new FastNoiseLite();
 
 	// Mesh Settings
 	Mesh->SetCastShadow(false);
@@ -34,35 +36,44 @@ void APChunkBase::BeginPlay()
 	Noise->SetNoiseType(FastNoiseLite::NoiseType_Perlin);
 	Noise->SetFractalType(FastNoiseLite::FractalType_FBm);
 
+	Noise2->SetFrequency(Planet->Frequency2);
+	Noise2->SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+	Noise2->SetFractalType(FastNoiseLite::FractalType_FBm);
+
+	Noise3->SetFrequency(Planet->Frequency3);
+	Noise3->SetNoiseType(FastNoiseLite::NoiseType_Cellular);
+	Noise3->SetFractalType(FastNoiseLite::FractalType_FBm);
+
 	Setup();
 }
 
 void APChunkBase::GenerateChunk()
 {
-	bStartedGeneration = true;
 	GenerateHeightMap();
-	while (!bHMGenerated)
-	{
-		//
-	}
 	GenerateMesh();
+}
 
-	//UE_LOG(LogTemp, Warning, TEXT("Vertex Count : %d"), VertexCount);
-	while (!bMeshGenerated)
+void APChunkBase::GenerateChunkAsync()
+{
+	b_GeneratorBusy = true;
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
+		{
+			auto WorldGenTask = new FAsyncTask<FAsyncChunkGenerator>(this);
+			WorldGenTask->StartBackgroundTask();
+			WorldGenTask->EnsureCompletion();
+			delete WorldGenTask;
+		});
+	while (!b_ChunkDataReady)
 	{
 		//
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("%f"), b_ChunkDataReady));
 	}
-	bMeshApplied = false;
 	ApplyMesh();
 }
 
 void APChunkBase::RegenerateChunk()
 {
 	ClearMesh();
-	while (!bMeshCleared)
-	{
-	}
-	bMeshCleared = false;
 	GenerateChunk();
 }
 
@@ -83,7 +94,8 @@ void APChunkBase::GenerateHeightMap()
 
 void APChunkBase::ApplyMesh()
 {
-	Mesh->CreateMeshSection(
+	Mesh->SetMaterial(0, Planet->Material);
+	Mesh->CreateMeshSection_LinearColor(
 		0,
 		MeshData.Vertices,
 		MeshData.Triangles,
@@ -93,15 +105,15 @@ void APChunkBase::ApplyMesh()
 		TArray<FProcMeshTangent>(),
 		true
 	);
-	Mesh->SetMaterial(0, Planet->Material);
-	bMeshApplied = true;
+	b_ChunkDataReady = false;
+	b_GeneratorBusy = false;
+	
 }
 
 void APChunkBase::ClearMesh()
 {
 	VertexCount = 0;
 	MeshData.Clear();
-	bMeshCleared = true;
 }
 
 void APChunkBase::ModifyVoxel(const FIntVector Position, const EBlock Block)
@@ -113,18 +125,9 @@ void APChunkBase::ModifyVoxel(const FIntVector Position, const EBlock Block)
 	ModifyVoxelData(Position, Block);
 
 	ClearMesh();
-	while (!bMeshCleared)
-	{
-		//
-	}
 	GenerateMesh();
 
 	//UE_LOG(LogTemp, Warning, TEXT("Vertex Count : %d"), VertexCount);
-	while (!bMeshGenerated)
-	{
-		//
-	}
-	bMeshApplied = false;
 	ApplyMesh();
 }
 
@@ -139,4 +142,9 @@ void APChunkBase::SetVisible(bool newVisibility)
 	{
 		Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
+}
+
+void FAsyncChunkGenerator::DoWork()
+{
+	ChunkGenerator->GenerateChunk();
 }

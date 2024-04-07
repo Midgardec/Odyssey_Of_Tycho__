@@ -25,36 +25,29 @@ public:
 	// Sets default values for this actor's properties
 	APChunkBase();
 	void GenerateChunk();
+	void GenerateChunkAsync();
 
-	bool bMeshGenerated = false;
-	bool bHMGenerated = false;//height map
-	bool bMeshApplied = false;
-	bool bStartedGeneration = false;
-	bool bMeshCleared = false;
+
+	bool b_GeneratorBusy = false;
+	bool b_ChunkDataReady = false;
+
+	//bool bMeshGenerated = false;
+	//bool bHMGenerated = false;//height map
+	//bool bMeshApplied = false;
+	//bool bStartedGeneration = false;
+	//bool bMeshCleared = false;
 	void RegenerateChunk();
-	
-	/*UPROPERTY(EditDefaultsOnly, Category="Chunk")
-	int Size = 64;*/
-	UPROPERTY(EditDefaultsOnly, Category="Planet")
-	APlanetBase* Planet;
-	/*UPROPERTY(EditDefaultsOnly, Category="Chunk")
-	FVector Origin = FVector(0, 0, 0);
-	UPROPERTY(EditDefaultsOnly, Category="Chunk")
-	float Radius = 500;
-	UPROPERTY(EditDefaultsOnly, Category="Chunk")
-	float Resolution = 500;*/
-	
-	/*TObjectPtr<UMaterialInterface> Material;
-	float Frequency;*/
-	EGenerationType GenerationType;
 
-	UFUNCTION(BlueprintCallable, Category="Chunk")
+	UPROPERTY(EditDefaultsOnly, Category = "Planet")
+	APlanetBase* Planet;
+	EGenerationType GenerationType;
+	UFUNCTION(BlueprintCallable, Category = "Chunk")
 	void ModifyVoxel(const FIntVector Position, const EBlock Block);
 
 	void SetVisible(bool);
 	int VertexCount = 0;
 
-	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -63,17 +56,32 @@ protected:
 	virtual void Generate2DHeightMap(const FVector Position) PURE_VIRTUAL(AChunkBase::Generate2DHeightMap);
 	virtual void Generate3DHeightMap(const FVector Position) PURE_VIRTUAL(AChunkBase::Generate3DHeightMap);
 	virtual void GenerateMesh() PURE_VIRTUAL(AChunkBase::GenerateMesh);
-	
+
 	virtual void ModifyVoxelData(const FIntVector Position, const EBlock Block) PURE_VIRTUAL(
 		AChunkBase::RemoveVoxelData);
 
 	TObjectPtr<UProceduralMeshComponent> Mesh;
 	FastNoiseLite* Noise;
+	FastNoiseLite* Noise2;
+	FastNoiseLite* Noise3;
 	FChunkMeshData MeshData;
-	
-	
+
+
 private:
 	void ApplyMesh();
 	void ClearMesh();
 	void GenerateHeightMap();
+};
+
+class FAsyncChunkGenerator : public FNonAbandonableTask
+{
+public:
+	FAsyncChunkGenerator(APChunkBase* ChunkGenerator) : ChunkGenerator(ChunkGenerator) {};
+	FORCEINLINE TStatId GetStatId() const
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(FAsyncChunkGenerator, STATGROUP_ThreadPoolAsyncTasks);
+	};
+	void DoWork();
+private:
+	APChunkBase* ChunkGenerator;
 };

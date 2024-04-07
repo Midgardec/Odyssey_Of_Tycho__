@@ -26,6 +26,10 @@
 			"Name": "UniversalCameraPlugin",
 			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/a9172fdfc87c464eae3a49860ee2610f"
+		},
+		{
+			"Name": "SunPosition",
+			"Enabled": true
 		}
 	]
 }

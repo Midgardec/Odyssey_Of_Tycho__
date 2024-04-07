@@ -24,7 +24,7 @@ void APMarchingChunkBase::Generate2DHeightMap(const FVector Position)
 			const float ypos = y + Position.Y;
 
 			const int Height = FMath::Clamp(FMath::RoundToInt((Noise->GetNoise(Xpos, ypos) + 1) * Planet->Size / 2), 0,
-			                                Planet->Size);
+				Planet->Size);
 
 			for (int z = 0; z < Height; z++)
 			{
@@ -39,6 +39,48 @@ void APMarchingChunkBase::Generate2DHeightMap(const FVector Position)
 	}
 }
 
+float APMarchingChunkBase::CalculateValue(int x, int y, int z, FVector Pos) {
+	// Получаем индекс текущего воксела
+
+	// Вычисляем расстояние от центра куба до текущего воксела
+	float distanceFromCenter = sqrt(pow(this->GetActorLocation().X + x * Planet->Resolution - Planet->Origin.X, 2) +
+		pow(this->GetActorLocation().Y + y * Planet->Resolution - Planet->Origin.Y, 2) +
+		pow(this->GetActorLocation().Z + z * Planet->Resolution - Planet->Origin.Z, 2));
+
+	float noise = 0;
+	float density=0;// = Planet->Radius - distanceFromCenter;
+	//// Применяем комбинацию шумовых функций для генерации рельефа
+	//float baseNoise = (Noise2->GetNoise(x + Position.X, y + Position.Y, z + Position.Z) + 1) / 2; // Базовый шум от 0 до 1
+	//float detailNoise = FMath::Abs(Noise3->GetNoise(x * 4 + Position.X, y * 4 + Position.Y, z * 4 + Position.Z)); // Детальный шум для создания расщелин и пещер
+	//float noise = baseNoise * 0.7f + detailNoise * 0.3f; // Комбинируем базовый и детальный шум
+	/*if (!(distanceFromCenter <= (Planet->Radius - Planet->TerrainHeight))) {*/
+
+	float freq = Planet->Frequency2;
+	float amplitude = 1.f;
+	for (int i = 0; i < 5; i++) {
+		Noise2->SetFrequency(freq);
+		density += Noise2->GetNoise(x + Pos.X, y + Pos.Y, z + Pos.Z) * amplitude;
+		freq *= 2;
+		amplitude *= 0.5;
+	}
+	density = density * (1.0f - distanceFromCenter / Planet->Radius);
+/*}
+else {
+	density = 1 * (1.0f - distanceFromCenter / (Planet->Radius - Planet->TerrainHeight));
+}*/
+
+// Вычисляем значение плотности воксела с использованием экспоненциального спада
+// Ограничиваем значение плотности в диапазоне от 0 до 1
+//density = FMath::Clamp(density, -1.0f, 1.0f);
+
+float BaseLevelRadius = Planet->Radius;
+
+if (distanceFromCenter > BaseLevelRadius)
+	return -abs(density);
+
+	return density;
+}
+
 void APMarchingChunkBase::Generate3DHeightMap(const FVector Position)
 {
 	for (int x = 0; x <= Planet->Size; ++x)
@@ -47,21 +89,13 @@ void APMarchingChunkBase::Generate3DHeightMap(const FVector Position)
 		{
 			for (int z = 0; z <= Planet->Size; ++z)
 			{
-				if (pointInSphere(this->GetActorLocation().X + x * Planet->Resolution,
-				                  this->GetActorLocation().Y + y * Planet->Resolution,
-				                  this->GetActorLocation().Z + z * Planet->Resolution))
-				{
-					Voxels[GetVoxelIndex(x, y, z)] = Noise->GetNoise(
-						x + Position.X, y + Position.Y, z + Position.Z);
-				}
-				else
-				{
-					Voxels[GetVoxelIndex(x, y, z)] = -1;
-				}
+				float dens = CalculateValue(x, y, z, Position);
+
+				Voxels[GetVoxelIndex(x, y, z)] = dens;
+
 			}
 		}
 	}
-	bHMGenerated = true;
 }
 
 bool APMarchingChunkBase::pointInSphere(int x, int y, int z)
@@ -71,7 +105,17 @@ bool APMarchingChunkBase::pointInSphere(int x, int y, int z)
 	float dz = z - Planet->Origin.Z;
 
 	float distance = FMath::Sqrt(dx * dx + dy * dy + dz * dz);
-	return distance <= Planet->Radius + Planet->Resolution / 2;
+	return distance <= Planet->Radius - Planet->TerrainHeight + Planet->Resolution * 0.9;
+}
+
+bool APMarchingChunkBase::pointInTerrain(int x, int y, int z)
+{
+	float dx = x - Planet->Origin.X;
+	float dy = y - Planet->Origin.Y;
+	float dz = z - Planet->Origin.Z;
+
+	float distance = FMath::Sqrt(dx * dx + dy * dy + dz * dz);
+	return distance <= Planet->Radius + Planet->Resolution * 0.9;
 }
 
 void APMarchingChunkBase::GenerateMesh()
@@ -101,42 +145,36 @@ void APMarchingChunkBase::GenerateMesh()
 				for (int i = 0; i < 8; ++i)
 				{
 					Cube[i] = Voxels[GetVoxelIndex(X + VertexOffset[i][0], Y + VertexOffset[i][1],
-					                               Z + VertexOffset[i][2])];
+						Z + VertexOffset[i][2])];
 				}
 
 				March(X, Y, Z, Cube);
 			}
 		}
 	}
-	bMeshGenerated = true;
+	b_ChunkDataReady = true;
 }
 
-FColor APMarchingChunkBase::setColorsToVertex(FVector v1) const
+FLinearColor APMarchingChunkBase::setColorsToVertex(FVector v1) const
 {
 	float distance = FVector::Dist(this->GetActorLocation() + v1, Planet->Origin);
-	/*GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red,
-	                                 FString::Printf(
-		                                 TEXT(
-			                                 "Radius: %d, Origin.X: %f, Origin.Y: %f, Origin.Z: %f, V.X: %f, V.Y: %f, V.Z: %f,distance: %f"),
-		                                 Planet->Radius, Planet->Origin.X,
-		                                 Planet->Origin.Y, Planet->Origin.Z, v1.X, v1.Y, v1.Z, distance));*/
-	if (distance < Planet->TerrainLevel_Water * Planet->Radius)
+	if (distance < Planet->Radius - Planet->TerrainHeight + Planet->TerrainLevel_Water * (Planet->TerrainHeight))
 	{
 		return Planet->TerrainColor_Water;
 	}
-	if (distance < Planet->TerrainLevel_Low * Planet->Radius)
+	if (distance < Planet->Radius - Planet->TerrainHeight + Planet->TerrainLevel_Low * (Planet->TerrainHeight))
 	{
 		return Planet->TerrainColor_Low;
 	}
-	if (distance < Planet->TerrainLevel_High * Planet->Radius)
+	if (distance < Planet->Radius - Planet->TerrainHeight + Planet->TerrainLevel_High * (Planet->TerrainHeight))
 	{
 		return Planet->TerrainColor_High;
 	}
-	if (distance < Planet->TerrainLevel_Top * Planet->Radius)
+	if (distance < Planet->Radius - Planet->TerrainHeight + Planet->TerrainLevel_Top * (Planet->TerrainHeight))
 	{
 		return Planet->TerrainColor_Top;
 	}
-	return FColor::Black;
+	return FColor::White;
 }
 
 void APMarchingChunkBase::March(const int X, const int Y, const int Z, const float Cube[8])
@@ -160,8 +198,8 @@ void APMarchingChunkBase::March(const int X, const int Y, const int Z, const flo
 		if ((EdgeMask & 1 << i) != 0)
 		{
 			const float Offset = Interpolation
-				                     ? GetInterpolationOffset(Cube[EdgeConnection[i][0]], Cube[EdgeConnection[i][1]])
-				                     : 0.5f;
+				? GetInterpolationOffset(Cube[EdgeConnection[i][0]], Cube[EdgeConnection[i][1]])
+				: 0.5f;
 
 			EdgeVertex[i].X = X + (VertexOffset[EdgeConnection[i][0]][0] + Offset * EdgeDirection[i][0]);
 			EdgeVertex[i].Y = Y + (VertexOffset[EdgeConnection[i][0]][1] + Offset * EdgeDirection[i][1]);
@@ -182,25 +220,26 @@ void APMarchingChunkBase::March(const int X, const int Y, const int Z, const flo
 
 		Normal.Normalize();
 
-		MeshData.Vertices.Append({V1, V2, V3});
+		MeshData.Vertices.Append({ V1, V2, V3 });
 
 		MeshData.Triangles.Append({
 			VertexCount + TriangleOrder[0],
 			VertexCount + TriangleOrder[1],
 			VertexCount + TriangleOrder[2]
-		});
+			});
 
 		MeshData.Normals.Append({
 			Normal,
 			Normal,
 			Normal
-		});
+			});
 
 		MeshData.Colors.Append({
 			setColorsToVertex(V1),
 			setColorsToVertex(V2),
 			setColorsToVertex(V3)
-		});
+			});
+
 
 		VertexCount += 3;
 	}

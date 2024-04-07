@@ -6,10 +6,11 @@
 #include "Math/UnrealMathUtility.h"
 #include "ProceduralMeshComponent.h"
 #include "FastNoiseLite.h"
-
+#include "Async/Async.h"
 #include "PChunkBase.h"
 #include "Tycho_character.h"
 #include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 APlanetBase::APlanetBase()
@@ -22,12 +23,12 @@ APlanetBase::APlanetBase()
 void APlanetBase::BeginPlay()
 {
 	Super::BeginPlay();
-	Origin = this->GetActorLocation() + FVector(Size * Resolution /2, Size * Resolution/2 , Size * Resolution/2 );
+	Origin = this->GetActorLocation() + FVector(Size * Resolution / 2, Size * Resolution / 2, Size * Resolution / 2);
 
-/// Radius calculating to fit chunks
-	Radius = FMath::Clamp(Radius, Resolution, (DrawDistance*2+1)*Size*Resolution/2 - Resolution);
+	/// Radius calculating to fit chunks
+	Radius = FMath::Clamp(Radius, Resolution, (DrawDistance * 2 + 1) * Size * Resolution / 2 - Resolution);
 
-	GEngine->AddOnScreenDebugMessage(-1,15.f,FColor::Silver, FString::Printf(TEXT("Radius: %i"),Radius));
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Silver, FString::Printf(TEXT("Radius: %i"), Radius));
 	switch (GenerationType)
 	{
 	case EGenerationType::GT_3D:
@@ -46,33 +47,37 @@ void APlanetBase::BeginPlay()
 void APlanetBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	timer += DeltaTime;
 
+	if (!b_CalledGeneration && timer >= 2.0) {
+		b_CalledGeneration = true;
+		GenerateChunks();
+	}
+
+}
+
+void APlanetBase::GenerateChunks()
+{
 	Player = Cast<APawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	if (Player)
 	{
 		//this->VertexSum = 0;
 		for (auto ch : chunks)
-        	{
-				if(!ch){break;}
-				if(!ch->bStartedGeneration)
-				{
-					ch->GenerateChunk();
-					
-					
-				}
-			
-				//this->VertexSum +=ch->VertexCount;
-				/*if (FVector::Distance(Player->GetActorLocation(), ch->GetActorLocation()) > 10000)
-        		{
-        			ch->SetVisible(false);
-        		}
-        		else
-        		{
-        			ch->SetVisible(true);
-        		}*/
-        	}
+		{
+			if (!ch) { break; }
+			ch->GenerateChunkAsync();
+
+			//this->VertexSum +=ch->VertexCount;
+			/*if (FVector::Distance(Player->GetActorLocation(), ch->GetActorLocation()) > 10000)
+			{
+				ch->SetVisible(false);
+			}
+			else
+			{
+				ch->SetVisible(true);
+			}*/
+		}
 	}
-	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Cyan, FString::Printf(TEXT("vertex count: %lld"), this->VertexSum));
 }
 
 void APlanetBase::Generate3DWorld()
@@ -86,7 +91,7 @@ void APlanetBase::Generate3DWorld()
 				auto transform = FTransform(
 					FRotator::ZeroRotator,
 					FVector(this->GetActorLocation().X + x * Size * Resolution, this->GetActorLocation().Y + y * Size * Resolution,
-					        this->GetActorLocation().Z + z * Size * Resolution),
+						this->GetActorLocation().Z + z * Size * Resolution),
 					FVector::OneVector
 				);
 
@@ -126,7 +131,7 @@ void APlanetBase::Generate2DWorld()
 			);
 
 			chunk->GenerationType = EGenerationType::GT_2D;
-			
+
 
 			UGameplayStatics::FinishSpawningActor(chunk, transform);
 
