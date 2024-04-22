@@ -16,7 +16,7 @@ public:
 	float SurfaceLevel = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Marching Cubes")
-	bool Interpolation = false;
+	bool Interpolation = true;
 	
 protected:
 	virtual void Setup() override;
@@ -24,7 +24,7 @@ protected:
 	float CalculateValue(int x, int y, int z, FVector Pos);
 	virtual void Generate3DHeightMap(FVector Position) override;
 	virtual void GenerateMesh() override;
-	FLinearColor setColorsToVertex(UE::Math::TVector<double> v1) const;
+	FLinearColor setColorsToVertex(UE::Math::TVector<double> v1,  FVector Normal) const;
 
 	bool pointInSphere(int x, int y, int z);
 	bool pointInTerrain(int x, int y, int z);

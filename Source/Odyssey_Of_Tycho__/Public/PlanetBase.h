@@ -19,28 +19,28 @@ class ODYSSEY_OF_TYCHO___API APlanetBase : public AActor
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditInstanceOnly, Category="World")
+	UPROPERTY(EditInstanceOnly, Category = "World")
 	TSubclassOf<APChunkBase> ChunkType;
-	
-	UPROPERTY(EditInstanceOnly, Category="World")
+
+	UPROPERTY(EditInstanceOnly, Category = "World")
 	int DrawDistance = 5;
 
-	UPROPERTY(EditInstanceOnly, Category="Chunk")
+	UPROPERTY(EditInstanceOnly, Category = "Chunk")
 	TObjectPtr<UMaterialInterface> Material;
-	
-	UPROPERTY(EditInstanceOnly, Category="Chunk")
+
+	UPROPERTY(EditInstanceOnly, Category = "Chunk")
 	int Size = 32;
 
-	UPROPERTY(EditInstanceOnly, Category="Chunk|Size*Resolution const")
+	UPROPERTY(EditInstanceOnly, Category = "Chunk|Size*Resolution const")
 	int BaseResolution = 32;
 
-	UPROPERTY(EditInstanceOnly, Category="Chunk")
+	UPROPERTY(EditInstanceOnly, Category = "Chunk")
 	int Resolution = 100;
-	
-	UPROPERTY(EditInstanceOnly, Category="Height Map")
+
+	UPROPERTY(EditInstanceOnly, Category = "Height Map")
 	EGenerationType GenerationType;
 
-	UPROPERTY(EditInstanceOnly, Category="Height Map")
+	UPROPERTY(EditInstanceOnly, Category = "Height Map")
 	float Frequency = 0.03f;
 	UPROPERTY(EditInstanceOnly, Category = "Height Map")
 	float Frequency2 = 0.03f;
@@ -50,40 +50,40 @@ public:
 	// Sets default values for this actor's properties
 	APlanetBase();
 
-	UPROPERTY(EditInstanceOnly, Category="Chunk")
+	UPROPERTY(EditInstanceOnly, Category = "Chunk")
 	int Radius = 500;
 	UPROPERTY(EditInstanceOnly, Category = "Chunk")
 	int TerrainHeight = 500;
 
-	UPROPERTY(EditInstanceOnly, Category="Chunk")
-	FVector Origin = FVector(0,0,0);
-	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	UPROPERTY(EditInstanceOnly, Category = "Chunk")
+	FVector Origin = FVector(0, 0, 0);
+	UPROPERTY(EditInstanceOnly, Category = "Planet|LODs|distance")
 	float LOD0;
-	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|LODs|distance")
 	float LOD1;
-	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|LODs|distance")
 	float LOD2;
-	UPROPERTY(EditInstanceOnly, Category="Planet|LODs|distance")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|LODs|distance")
 	float LOD3;
-	
-	UPROPERTY(EditInstanceOnly, Category="Planet|Water|Level")
+
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Water|Level")
 	float TerrainLevel_Water;
-	UPROPERTY(EditInstanceOnly, Category="Planet|Low Ground|Level")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Low Ground|Level")
 	float TerrainLevel_Low;
-	UPROPERTY(EditInstanceOnly, Category="Planet|High Ground|Level")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|High Ground|Level")
 	float TerrainLevel_High;
-	UPROPERTY(EditInstanceOnly, Category="Planet|Top Ground|Level")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Top Ground|Level")
 	float TerrainLevel_Top;
-	
-	UPROPERTY(EditInstanceOnly, Category="Planet|Water|Color")
+
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Water|Color")
 	FColor TerrainColor_Water;
-	UPROPERTY(EditInstanceOnly, Category="Planet|Low Ground|Color")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Low Ground|Color")
 	FColor TerrainColor_Low;
-	UPROPERTY(EditInstanceOnly, Category="Planet|High Ground|Color")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|High Ground|Color")
 	FColor TerrainColor_High;
-	UPROPERTY(EditInstanceOnly, Category="Planet|Top Ground|Color")
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Top Ground|Color")
 	FColor TerrainColor_Top;
-	
+
 	int64 VertexSum;
 protected:
 	// Called when the game starts or when spawned
@@ -91,11 +91,31 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	void GenerateChunks();
 private:
-	float timer=0;
-	bool b_CalledGeneration=false;
+	float timer = 0;
+	bool b_CalledGeneration = false;
 	int ChunkCount;
 	TArray<TObjectPtr<APChunkBase>> chunks;
 	TObjectPtr<APawn> Player;
 	void Generate3DWorld();
 	void Generate2DWorld();
+
+
+	bool b_GeneratorBusy = false;
+public:
+	void GeneratePlanet(APChunkBase* ch);
+	void GeneratePlanetAsync();
+
+};
+class FAsyncChunkGenerator : public FNonAbandonableTask
+{
+public:
+	FAsyncChunkGenerator(APlanetBase* PlanetGenerator, APChunkBase* chunk) : PlanetGenerator(PlanetGenerator), ch(chunk){};
+	FORCEINLINE TStatId GetStatId() const
+	{
+		RETURN_QUICK_DECLARE_CYCLE_STAT(FAsyncChunkGenerator, STATGROUP_ThreadPoolAsyncTasks);
+	};
+	void DoWork();
+private:
+	APChunkBase* ch;
+	APlanetBase* PlanetGenerator;
 };

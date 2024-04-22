@@ -31,7 +31,8 @@ public:
 	bool b_GeneratorBusy = false;
 	bool b_ChunkDataReady = false;
 
-	//bool bMeshGenerated = false;
+	bool b_MeshGenerated = false;
+	bool b_AppliedMesh = false;
 	//bool bHMGenerated = false;//height map
 	//bool bMeshApplied = false;
 	//bool bStartedGeneration = false;
@@ -51,6 +52,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	virtual void Setup() PURE_VIRTUAL(AChunkBase::Setup);
 	virtual void Generate2DHeightMap(const FVector Position) PURE_VIRTUAL(AChunkBase::Generate2DHeightMap);
@@ -73,15 +75,3 @@ private:
 	void GenerateHeightMap();
 };
 
-class FAsyncChunkGenerator : public FNonAbandonableTask
-{
-public:
-	FAsyncChunkGenerator(APChunkBase* ChunkGenerator) : ChunkGenerator(ChunkGenerator) {};
-	FORCEINLINE TStatId GetStatId() const
-	{
-		RETURN_QUICK_DECLARE_CYCLE_STAT(FAsyncChunkGenerator, STATGROUP_ThreadPoolAsyncTasks);
-	};
-	void DoWork();
-private:
-	APChunkBase* ChunkGenerator;
-};

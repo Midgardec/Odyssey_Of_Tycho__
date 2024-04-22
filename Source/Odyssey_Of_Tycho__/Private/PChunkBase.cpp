@@ -13,7 +13,7 @@
 APChunkBase::APChunkBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Mesh");
 	Noise = new FastNoiseLite();
@@ -37,7 +37,7 @@ void APChunkBase::BeginPlay()
 	Noise->SetFractalType(FastNoiseLite::FractalType_FBm);
 
 	Noise2->SetFrequency(Planet->Frequency2);
-	Noise2->SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+	Noise2->SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 	Noise2->SetFractalType(FastNoiseLite::FractalType_FBm);
 
 	Noise3->SetFrequency(Planet->Frequency3);
@@ -46,29 +46,42 @@ void APChunkBase::BeginPlay()
 
 	Setup();
 }
-
+void APChunkBase::Tick(float DeltaTime)
+{
+	if (b_ChunkDataReady && !b_AppliedMesh) {
+		ApplyMesh();
+		b_AppliedMesh = true;
+	}
+}
 void APChunkBase::GenerateChunk()
 {
 	GenerateHeightMap();
 	GenerateMesh();
+	while (!b_ChunkDataReady) {
+
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("%f"), b_ChunkDataReady));
+	}
+	b_AppliedMesh = false;
+	//ApplyMesh();
 }
 
 void APChunkBase::GenerateChunkAsync()
 {
 	b_GeneratorBusy = true;
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
+	/*AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&]()
 		{
 			auto WorldGenTask = new FAsyncTask<FAsyncChunkGenerator>(this);
 			WorldGenTask->StartBackgroundTask();
 			WorldGenTask->EnsureCompletion();
 			delete WorldGenTask;
-		});
+		});*/
+	GenerateChunk();
 	while (!b_ChunkDataReady)
 	{
 		//
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Blue, FString::Printf(TEXT("%f"), b_ChunkDataReady));
 	}
-	ApplyMesh();
+	
 }
 
 void APChunkBase::RegenerateChunk()
@@ -144,7 +157,7 @@ void APChunkBase::SetVisible(bool newVisibility)
 	}
 }
 
-void FAsyncChunkGenerator::DoWork()
-{
-	ChunkGenerator->GenerateChunk();
-}
+//void FAsyncChunkGenerator::DoWork()
+//{
+//	ChunkGenerator->GenerateChunk();
+//}

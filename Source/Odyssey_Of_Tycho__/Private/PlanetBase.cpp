@@ -51,7 +51,7 @@ void APlanetBase::Tick(float DeltaTime)
 
 	if (!b_CalledGeneration && timer >= 2.0) {
 		b_CalledGeneration = true;
-		GenerateChunks();
+		GeneratePlanetAsync();
 	}
 
 }
@@ -79,6 +79,43 @@ void APlanetBase::GenerateChunks()
 		}
 	}
 }
+
+void APlanetBase::GeneratePlanet(APChunkBase* chunkToGenerate) {
+	chunkToGenerate->GenerateChunk();
+}
+void APlanetBase::GeneratePlanetAsync()
+{
+	b_GeneratorBusy = true;
+	Player = Cast<APawn>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	if (Player)
+	{
+		//this->VertexSum = 0;
+		for (auto ch : chunks)
+		{
+			if (!ch) { break; }
+			//ch->GenerateChunkAsync();
+			AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [&, ch]()
+				{
+					auto WorldGenTask = new FAsyncTask<FAsyncChunkGenerator>(this, ch);
+					WorldGenTask->StartBackgroundTask();
+					WorldGenTask->EnsureCompletion();
+					delete WorldGenTask;
+				});
+			//this->VertexSum +=ch->VertexCount;
+			/*if (FVector::Distance(Player->GetActorLocation(), ch->GetActorLocation()) > 10000)
+			{
+				ch->SetVisible(false);
+			}
+			else
+			{
+				ch->SetVisible(true);
+			}*/
+		}
+	}
+
+
+}
+
 
 void APlanetBase::Generate3DWorld()
 {
@@ -138,4 +175,8 @@ void APlanetBase::Generate2DWorld()
 			ChunkCount++;
 		}
 	}
+}
+void FAsyncChunkGenerator::DoWork()
+{
+	PlanetGenerator->GeneratePlanet(this->ch);
 }
