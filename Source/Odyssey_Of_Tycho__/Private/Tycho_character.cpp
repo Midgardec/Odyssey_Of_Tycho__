@@ -7,7 +7,8 @@
 
 #include "Kismet/GameplayStatics.h"
 
-
+#include "TestManager.h"
+#include "TSEventManager.h"
 // Sets default values
 ATycho_Character::ATycho_Character()
 {
@@ -45,6 +46,8 @@ ATycho_Character::ATycho_Character()
 	/// backpack
 	//Backpack_Size = 800.f;
 	Backpack_SpaceLeft = Backpack_Size;
+
+
 }
 
 // Called when the game starts or when spawned
@@ -69,6 +72,22 @@ void ATycho_Character::BeginPlay()
 				break;
 			}
 		}
+	}
+/// TestManager
+	TArray<AActor*> TestManagers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATestManager::StaticClass(), TestManagers);
+
+	for (auto TM : TestManagers)
+	{
+		m_TestManager = Cast<ATestManager>(TM);
+	}
+/// EventManager
+	TArray<AActor*> EventManagers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATSEventManager::StaticClass(), EventManagers);
+
+	for (auto EM : EventManagers)
+	{
+		m_EventManager = Cast<ATSEventManager>(EM);
 	}
 }
 
@@ -125,6 +144,11 @@ void ATycho_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAxis("LookUp", this, &ATycho_Character::LookUp);
 
 	PlayerInputComponent->BindAction("TargetPointer", IE_Pressed, this, &ATycho_Character::SetTarget);
+
+	PlayerInputComponent->BindAction("key1", IE_Pressed, this, &ATycho_Character::KeyPressedOne);
+	PlayerInputComponent->BindAction("key2", IE_Pressed, this, &ATycho_Character::KeyPressedTwo);
+	PlayerInputComponent->BindAction("key3", IE_Pressed, this, &ATycho_Character::KeyPressedThree);
+
 }
 
 ///
@@ -210,6 +234,7 @@ void ATycho_Character::EnterSpaceShip()
 			this->SetActorEnableCollision(false);
 			//this->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(Possess_Spaceship);
+			if (m_EventManager) { m_EventManager->ProcessEventType(EEventType::EventSpaceship); }
 		}
 	}
 }
@@ -288,6 +313,33 @@ float ATycho_Character::CosinePlayerToObject(const FVector& ObjectLocation) cons
 	const float CosinePO = ForwardVectorNormal.Dot(PlayerToObjectVectorNormal) / PlayerToObjectVectorNormal.Length();
 
 	return CosinePO;
+}
+
+void ATycho_Character::KeyPressedOne()
+{
+	FString outMessage;
+	if (m_TestManager) {
+		m_TestManager->CheckRightAnswer(0, outMessage);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
+}
+
+void ATycho_Character::KeyPressedTwo()
+{
+	FString outMessage;
+	if (m_TestManager) {
+		m_TestManager->CheckRightAnswer(1, outMessage);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 2")));
+}
+
+void ATycho_Character::KeyPressedThree()
+{
+	FString outMessage;
+	if (m_TestManager) {
+		m_TestManager->CheckRightAnswer(2, outMessage);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 3")));
 }
 
 void ATycho_Character::Collect()

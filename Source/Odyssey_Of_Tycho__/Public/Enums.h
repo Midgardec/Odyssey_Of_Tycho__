@@ -18,3 +18,9 @@ enum class EGenerationType : uint8
 	GT_3D UMETA(DisplayName = "3D"),
 	GT_2D UMETA(DisplayName = "2D"),
 };
+
+UENUM(BlueprintType)
+enum class EEventType : uint8 {
+	EventGravity, EventStars,EventPlanets,EventMoons ,EventSpaceship, EventNull
+};
+

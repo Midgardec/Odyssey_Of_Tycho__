@@ -7,7 +7,8 @@
 #include "TestQuestion.generated.h"
 
 
-#define DEFAULT_STR "_"
+#define DEFAULT_STR TEXT("_")
+#define MESSAGE_OK TEXT("OK")
 
 UCLASS()
 class ODYSSEY_OF_TYCHO___API ATestQuestion : public AActor
@@ -35,13 +36,17 @@ public:
 	void GetRightAnswerIndex(int& outIndex, FString& outMessage);
 	UFUNCTION(BlueprintCallable)
 	void GetStatus(bool& outStatus);
+	UFUNCTION(BlueprintCallable)
 
 	void SetQuestion(const FString& newQ, FString& outMessage);
+	UFUNCTION(BlueprintCallable)
 	void SetTheme(const FString& newTheme, FString& outMessage);
 
 	UFUNCTION(BlueprintCallable)
 	void SetStatus(bool newStatus, FString& outMessage);
+	UFUNCTION(BlueprintCallable)
 	void SetAnswers(const TArray<FString>& Answers, FString& outMessage);
+	UFUNCTION(BlueprintCallable)
 	void SetRightAnswerIndex(int newIndex, FString& outMessage);
 private:
 	bool m_Status = false;// 1 - solved; 0 - unsolved;

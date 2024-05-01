@@ -16,11 +16,14 @@
 
 #include "Tycho_character.generated.h"
 
-UCLASS(config=Game)
+class ATestManager;
+class ATSEventManager;
+
+UCLASS(config = Game)
 class ODYSSEY_OF_TYCHO___API ATycho_Character : public ACharacter
 {
 	GENERATED_BODY()
-	
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* SpringArm;
@@ -46,7 +49,7 @@ protected:
 	AActor* FindObjectToDrill();
 
 	float Get_OptimalCosine(const float Player_DrillDistance, const float Player_Distance);
-	
+
 	void Collect();
 	void StopCollect();
 
@@ -99,6 +102,8 @@ private:
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
 	APetBot* PetFollower;
 	void SetTarget();
+
+
 public:
 	UCameraComponent* GetCamera();
 	long long Get_CurrentDrillObject_ID();
@@ -132,12 +137,25 @@ public:
 	///
 	float CosinePlayerToObject(const FVector& ObjectLocation) const;
 
+
+
+	/// --- TestSystem
+	void KeyPressedOne();
+	void KeyPressedTwo();
+	void KeyPressedThree();
+private:
+	/// TestManager
+	ATestManager* m_TestManager;
+	/// EventtManager
+	ATSEventManager* m_EventManager;
+public:
 	/// --------------------------------------- UE defaults
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 };

@@ -12,7 +12,8 @@
 #include "Spaceship.generated.h"
 
 class ATycho_Character;
-
+class ATestManager;
+class ATSEventManager;
 UCLASS()
 class ODYSSEY_OF_TYCHO___API ASpaceship : public APawn
 {
@@ -95,8 +96,21 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	/// --- TestSystem
+	void KeyPressedOne();
+	void KeyPressedTwo();
+	void KeyPressedThree();
+private:
+	/// TestManager
+	ATestManager* m_TestManager;
+	/// EventtManager
+	ATSEventManager* m_EventManager;
 
+public:
+	/// ------
 	void LandingModeToggle();
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+
 };

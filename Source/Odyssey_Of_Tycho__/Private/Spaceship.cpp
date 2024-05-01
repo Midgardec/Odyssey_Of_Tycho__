@@ -6,6 +6,9 @@
 
 #include "VectorTypes.h"
 #include "Tycho_character.h"
+
+#include "TestManager.h"
+#include "TSEventManager.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -61,6 +64,23 @@ ATycho_Character* ASpaceship::Get_Player() const
 void ASpaceship::BeginPlay()
 {
 	Super::BeginPlay();
+
+/// TestManager
+	TArray<AActor*> TestManagers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATestManager::StaticClass(), TestManagers);
+
+	for (auto TM : TestManagers)
+	{
+		m_TestManager = Cast<ATestManager>(TM);
+	}
+/// EventManager
+	TArray<AActor*> EventManagers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATSEventManager::StaticClass(), EventManagers);
+
+	for (auto EM : EventManagers)
+	{
+		m_EventManager = Cast<ATSEventManager>(EM);
+	}
 }
 
 void ASpaceship::ExitSpaceShip()
@@ -100,9 +120,9 @@ void ASpaceship::Spaceship_Roll(float Value)
 void ASpaceship::Spaceship_Vertical(float Value)
 {
 	VerticalThrust = FMath::FInterpTo(VerticalThrust,
-	                                  FMath::Lerp(MaxVerticalThrust / 2, MaxVerticalThrust, (Value + 1) / 2),
-	                                  GetWorld()->GetDeltaSeconds(),
-	                                  0.5);
+		FMath::Lerp(MaxVerticalThrust / 2, MaxVerticalThrust, (Value + 1) / 2),
+		GetWorld()->GetDeltaSeconds(),
+		0.5);
 	if ((Controller != nullptr) && (Value > 0.0f))
 	{
 		UpVelocity = GetActorUpVector() * VerticalThrust;
@@ -120,8 +140,8 @@ void ASpaceship::Spaceship_Vertical(float Value)
 void ASpaceship::MoveRight(float Value)
 {
 	HorizontalThrust = FMath::FInterpTo(HorizontalThrust, FMath::Lerp(0, MaxHorizontalThrust, (Value + 1) / 2),
-		                                    GetWorld()->GetDeltaSeconds(),
-		                                    0.5);
+		GetWorld()->GetDeltaSeconds(),
+		0.5);
 	/// Calculating forward thrust
 	if ((Controller != nullptr) && (Value > 0.0f))
 	{
@@ -143,8 +163,8 @@ void ASpaceship::MoveRight(float Value)
 void ASpaceship::MoveForward(float Value)
 {
 	Thrust = FMath::FInterpTo(Thrust, FMath::Lerp(0, MaxThrust, (Value + 1) / 2),
-	                          GetWorld()->GetDeltaSeconds(),
-	                          0.5);
+		GetWorld()->GetDeltaSeconds(),
+		0.5);
 	/// Calculating forward thrust
 	if ((Controller != nullptr) && (Value > 0.0f))
 	{
@@ -156,24 +176,24 @@ void ASpaceship::MoveForward(float Value)
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1,10.f, FColor::Magenta, FString::Printf(TEXT("not moving forward")));
-		if(!isInSpace)
+		//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Magenta, FString::Printf(TEXT("not moving forward")));
+		if (!isInSpace)
 		{
-			ForwardVelocity -= ForwardVelocity * 1;	
+			ForwardVelocity -= ForwardVelocity * 1;
 		}
-		
+
 	}
 }
 
 void ASpaceship::Turn(float Value)
 {
 	DesiredYaw += Value * RotationRate * 0.005;
-	DesiredYaw = FMath::Clamp(DesiredYaw, -90 , 90);
-	
+	DesiredYaw = FMath::Clamp(DesiredYaw, -90, 90);
+
 	/*DesiredYaw = FMath::Lerp(0, RotationRate, Value);*/
 	if (FMath::Abs(Value) < 0.01)
 	{
-		DesiredYaw -= DesiredYaw*0.1;
+		DesiredYaw -= DesiredYaw * 0.1;
 	}
 	/*AddControllerYawInput(Value);*/
 }
@@ -182,10 +202,10 @@ void ASpaceship::LookUp(float Value)
 {
 	//DesiredPitch = -FMath::Lerp(0, RotationRate, Value);
 	DesiredPitch += -Value * RotationRate * 0.005;
-	DesiredPitch = FMath::Clamp(DesiredPitch, -90 , 90);
+	DesiredPitch = FMath::Clamp(DesiredPitch, -90, 90);
 	if (FMath::Abs(Value) < 0.01)
 	{
-		DesiredPitch -= DesiredPitch*0.1;
+		DesiredPitch -= DesiredPitch * 0.1;
 	}
 
 	/*AddControllerPitchInput(Value);*/
@@ -212,11 +232,11 @@ void ASpaceship::Tick(float DeltaTime)
 	/*FMath::RInterpTo(this->GetActorRotation(),this->GetActorRotation() + FRotator(DesiredPitch, DesiredYaw, 0), DeltaTime,10);*/
 	if (FMath::Abs(AsinPitch) > 0.5)
 	{
-		MeshComponent->AddTorqueInDegrees(-AsinPitch * GetActorRightVector() * RotationRate,TEXT("None"), true);
+		MeshComponent->AddTorqueInDegrees(-AsinPitch * GetActorRightVector() * RotationRate, TEXT("None"), true);
 	}
 	if (FMath::Abs(AsinYaw) > 0.5)
 	{
-		MeshComponent->AddTorqueInDegrees(AsinYaw * GetActorUpVector() * RotationRate ,TEXT("None"), true);
+		MeshComponent->AddTorqueInDegrees(AsinYaw * GetActorUpVector() * RotationRate, TEXT("None"), true);
 	}
 
 
@@ -228,6 +248,31 @@ void ASpaceship::Tick(float DeltaTime)
 	DesiredYaw = newRotation.Yaw - MeshComponent->GetRelativeRotation().Yaw;*/
 }
 
+void ASpaceship::KeyPressedOne()
+{
+	FString outMessage;
+	if (m_TestManager) {
+		m_TestManager->CheckRightAnswer(0, outMessage);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
+}
+void ASpaceship::KeyPressedTwo()
+{
+	FString outMessage;
+	if (m_TestManager) {
+		m_TestManager->CheckRightAnswer(1, outMessage);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 2")));
+}
+void ASpaceship::KeyPressedThree()
+{
+	FString outMessage;
+	if (m_TestManager) {
+		m_TestManager->CheckRightAnswer(2, outMessage);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 3")));
+}
+
 void ASpaceship::LandingModeToggle()
 {
 	if (MeshComponent->GetComponentVelocity().Length() <= PreLandingMaxVelocity)
@@ -235,17 +280,17 @@ void ASpaceship::LandingModeToggle()
 		//MeshComponent->AddImpulse(-MeshComponent->GetComponentVelocity());
 
 		LandingMode = !LandingMode;
-		/* 
+		/*
 		/// TODO:
 		///	MeshComponent->SetEnableGravity(LandingMode);
 		/// maybe disable inputs and AddImpulse downward
 		///
 		/// ( calculate down direction : maybe add sphere collision and rotate to landing zone =>
 		/// => need to define landing zone =>
-		/// => if statement need to be redesigned with new landing zone component). 
+		/// => if statement need to be redesigned with new landing zone component).
 		*/
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Turquoise,
-		                                 FString::Printf(TEXT("Is In LandingMod: %i"), LandingMode));
+			FString::Printf(TEXT("Is In LandingMod: %i"), LandingMode));
 	}
 }
 
@@ -270,4 +315,10 @@ void ASpaceship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 	PlayerInputComponent->BindAxis("Turn", this, &ASpaceship::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ASpaceship::LookUp);
+
+
+	PlayerInputComponent->BindAction("key1", IE_Pressed, this, &ASpaceship::KeyPressedOne);
+	PlayerInputComponent->BindAction("key2", IE_Pressed, this, &ASpaceship::KeyPressedTwo);
+	PlayerInputComponent->BindAction("key3", IE_Pressed, this, &ASpaceship::KeyPressedThree);
+
 }

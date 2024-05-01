@@ -25,41 +25,30 @@ void ATestQuestion::BeginPlay()
 
 void ATestQuestion::GetQuestion(FString& outString, FString& outMessage)
 {
-	outMessage = (outString.Len() > 0) ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: Question: SET - No question"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
-	{
-		outString = m_Question;
-	}
+	outString = m_Question;
+	outMessage = (outString.Len() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Question: SET - No question"));
+
 }
 
 void ATestQuestion::GetTheme(FString& outString, FString& outMessage)
 {
+	outString = m_Theme;
+	outMessage = (outString.Len() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Theme: GET - No Theme in question"));
 
-	outMessage = (outString.Len() > 0) ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: Theme: GET - No Theme in question"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
-	{
-		outString = m_Theme;
-	}
 }
 
 void ATestQuestion::GetAnswers(TArray<FString>& outArray, FString& outMessage)
 {
+	outArray = m_Answers;
+	outMessage = (outArray.Num() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: AnswersArray: GET - No answers"));
 
-	outMessage = (outArray.Num() > 0) ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: AnswersArray: GET - No answers"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
-	{
-		outArray = m_Answers;
-	}
 }
 
 void ATestQuestion::GetRightAnswerIndex(int& outIndex, FString& outMessage)
 {
-
-	outMessage = (outIndex > 0) ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: RightAnswerIndex: GET - InvalidIndex"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
-	{
-		outIndex = m_RightAnswerIndex;
-	}
+	outIndex = m_RightAnswerIndex;
+	outMessage = (outIndex > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: RightAnswerIndex: GET - InvalidIndex"));
+	
 }
 
 void ATestQuestion::GetStatus(bool& outStatus)
@@ -69,8 +58,8 @@ void ATestQuestion::GetStatus(bool& outStatus)
 
 void ATestQuestion::SetQuestion(const FString& newQ, FString& outMessage)
 {
-	outMessage = (newQ != "") ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: Question: GET - question.len() < 0"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
+	outMessage = (newQ != "") ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Question: GET - question.len() < 0"));
+	if (outMessage == FormatErrorMessage(MESSAGE_OK))
 	{
 		m_Question = newQ;
 	}
@@ -78,8 +67,8 @@ void ATestQuestion::SetQuestion(const FString& newQ, FString& outMessage)
 
 void ATestQuestion::SetTheme(const FString& newTheme, FString& outMessage)
 {
-	outMessage = (newTheme != "") ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: Theme: SET - theme.len() < 0"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
+	outMessage = (newTheme != "") ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Theme: SET - theme.len() < 0"));
+	if (outMessage == FormatErrorMessage(MESSAGE_OK))
 	{
 		m_Theme = newTheme;
 	}
@@ -88,13 +77,13 @@ void ATestQuestion::SetTheme(const FString& newTheme, FString& outMessage)
 void ATestQuestion::SetStatus(bool newStatus, FString& outMessage)
 {
 	m_Status = newStatus;
-	outMessage = FormatErrorMessage(TEXT("OK"));
+	outMessage = FormatErrorMessage(MESSAGE_OK);
 }
 
 void ATestQuestion::SetAnswers(const TArray<FString>& Answers, FString& outMessage)
 {
-	outMessage = (Answers.Num() > 0) ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: AnswersArray: SET - no items in array"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
+	outMessage = (Answers.Num() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: AnswersArray: SET - no items in array"));
+	if (outMessage == FormatErrorMessage(MESSAGE_OK))
 	{
 		m_Answers = Answers;
 	}
@@ -103,17 +92,11 @@ void ATestQuestion::SetAnswers(const TArray<FString>& Answers, FString& outMessa
 
 void ATestQuestion::SetRightAnswerIndex(int newIndex, FString& outMessage)
 {
-	outMessage = (m_Answers.IsValidIndex(newIndex)) ? FormatErrorMessage(TEXT("OK")) : FormatErrorMessage(TEXT("error: RightAnswerIndex: SET - invalid index"));
-	if (outMessage == FormatErrorMessage(TEXT("OK")))
+	outMessage = (m_Answers.IsValidIndex(newIndex)) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: RightAnswerIndex: SET - invalid index"));
+	if (outMessage == FormatErrorMessage(MESSAGE_OK))
 	{
-		m_Answers = Answers;
-	}
-	if (m_Answers.IsValidIndex(newIndex)) {
 		m_RightAnswerIndex = newIndex;
-		outMessage = FormatErrorMessage(TEXT("OK"));
 	}
-	else {
-		outMessage = FormatErrorMessage(TEXT("Index error: maybe out of range"));
-	}
+
 }
 
