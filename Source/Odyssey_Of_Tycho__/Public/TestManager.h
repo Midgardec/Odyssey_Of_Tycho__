@@ -7,6 +7,7 @@
 #include "TestManager.generated.h"
 
 class ATestQuestion;
+
 UCLASS()
 class ODYSSEY_OF_TYCHO___API ATestManager : public AActor
 {
@@ -20,6 +21,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	
+	
+	void LoadQuestionsFromJSON(const FString& JsonFilePath, FString& outMessage);
+
+	
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -45,7 +51,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GetQuestions(TArray<ATestQuestion*>& outQuestions, FString& outMessage);
 
-	TObjectPtr<ATestQuestion> ConstructQuestion(const FString& newQuestion, const FString& newTheme, const TArray<FString>& newAnswers, int newRightAnswerIndex);
+	static TObjectPtr<ATestQuestion> ConstructQuestion(const FString& newQuestion, const FString& newTheme, const FString& newParagraph, const TArray<FString>& newAnswers, int newRightAnswerIndex);
 private:
 	TArray<TObjectPtr<ATestQuestion>> m_Questions;
 	FString m_Theme;

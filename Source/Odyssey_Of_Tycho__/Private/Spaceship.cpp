@@ -211,16 +211,8 @@ void ASpaceship::LookUp(float Value)
 	/*AddControllerPitchInput(Value);*/
 }
 
-// Called every frame
-void ASpaceship::Tick(float DeltaTime)
+void ASpaceship::RotationStabilization()
 {
-	Super::Tick(DeltaTime);
-	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta,FString::Printf(TEXT("Velocity: %f"), MeshComponent->GetComponentVelocity().Length()));
-
-	MeshComponent->AddImpulse(ForwardVelocity + UpVelocity + RightVelocity);
-
-	/// Rotation stabilization;
-	//MeshComponent->AddTorqueInDegrees((-MeshComponent->GetPhysicsAngularVelocityInDegrees()), TEXT("None"), true);
 	const float FVOptLen = RotationRate / 2;
 	const float SinPitch = DesiredPitch / sqrt(
 		pow(GetActorForwardVector().Length() * FVOptLen, 2) + pow(DesiredPitch, 2));
@@ -238,9 +230,28 @@ void ASpaceship::Tick(float DeltaTime)
 	{
 		MeshComponent->AddTorqueInDegrees(AsinYaw * GetActorUpVector() * RotationRate, TEXT("None"), true);
 	}
-
-
 	MeshComponent->AddTorqueInDegrees((-MeshComponent->GetPhysicsAngularVelocityInDegrees()), TEXT("None"), true);
+}
+
+void ASpaceship::ApplyVelocity()
+{
+	MeshComponent->AddImpulse(ForwardVelocity + UpVelocity + RightVelocity);
+}
+
+// Called every frame
+void ASpaceship::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta,FString::Printf(TEXT("Velocity: %f"), MeshComponent->GetComponentVelocity().Length()));
+
+	ApplyVelocity();
+
+	/// Rotation stabilization;
+	//MeshComponent->AddTorqueInDegrees((-MeshComponent->GetPhysicsAngularVelocityInDegrees()), TEXT("None"), true);
+	RotationStabilization();
+
+
+	
 	//MeshComponent->SetWorldRotation(FMath::RInterpTo(MeshComponent->GetRelativeRotation(), MeshComponent->GetRelativeRotation() + newRotation, DeltaTime,5));
 
 

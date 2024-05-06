@@ -25,8 +25,14 @@ void ATestQuestion::BeginPlay()
 
 void ATestQuestion::GetQuestion(FString& outString, FString& outMessage)
 {
-	outString = m_Question;
-	outMessage = (outString.Len() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Question: SET - No question"));
+	try {
+		outString = m_Question;
+		outMessage = (outString.Len() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Question: SET - No question"));
+
+	}
+	catch (std::exception e) {
+		outMessage = e.what();
+	}
 
 }
 
@@ -37,8 +43,15 @@ void ATestQuestion::GetTheme(FString& outString, FString& outMessage)
 
 }
 
+void ATestQuestion::GetParagraph(FString& outString, FString& outMessage)
+{
+	outString = m_Paragraph;
+	outMessage = (outString.Len() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Paragraph: GET - No Paragraph in question"));
+}
+
 void ATestQuestion::GetAnswers(TArray<FString>& outArray, FString& outMessage)
 {
+
 	outArray = m_Answers;
 	outMessage = (outArray.Num() > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: AnswersArray: GET - No answers"));
 
@@ -48,7 +61,7 @@ void ATestQuestion::GetRightAnswerIndex(int& outIndex, FString& outMessage)
 {
 	outIndex = m_RightAnswerIndex;
 	outMessage = (outIndex > 0) ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: RightAnswerIndex: GET - InvalidIndex"));
-	
+
 }
 
 void ATestQuestion::GetStatus(bool& outStatus)
@@ -98,5 +111,14 @@ void ATestQuestion::SetRightAnswerIndex(int newIndex, FString& outMessage)
 		m_RightAnswerIndex = newIndex;
 	}
 
+}
+
+void ATestQuestion::SetParagraph(const FString& newParagraph, FString& outMessage)
+{
+	outMessage = (newParagraph != "") ? FormatErrorMessage(MESSAGE_OK) : FormatErrorMessage(TEXT("error: Paragraph: SET - Paragraph.len() < 0"));
+	if (outMessage == FormatErrorMessage(MESSAGE_OK))
+	{
+		m_Paragraph = newParagraph;
+	}
 }
 

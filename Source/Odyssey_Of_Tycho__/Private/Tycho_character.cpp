@@ -233,8 +233,9 @@ void ATycho_Character::EnterSpaceShip()
 			this->SetActorHiddenInGame(true);
 			this->SetActorEnableCollision(false);
 			//this->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			if (m_EventManager) { m_EventManager->ProcessEventType(EEventType::EventSpaceship);
 			UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(Possess_Spaceship);
-			if (m_EventManager) { m_EventManager->ProcessEventType(EEventType::EventSpaceship); }
+			 }
 		}
 	}
 }

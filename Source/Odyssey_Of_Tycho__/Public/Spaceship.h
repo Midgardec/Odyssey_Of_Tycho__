@@ -55,7 +55,7 @@ protected:
 	bool LandingMode = true;
 	double PreLandingMaxVelocity = 1000.f;
 	
-	float RotationRate = 150.f;
+	float RotationRate = 50.f;
 
 	float minMouse=100;
 	float maxMouse=-100;
@@ -93,6 +93,8 @@ protected:
 	void LookUp(float Value);
 
 public:
+	void RotationStabilization();
+	void ApplyVelocity();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

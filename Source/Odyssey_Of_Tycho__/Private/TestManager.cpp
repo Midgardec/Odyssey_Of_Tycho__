@@ -2,7 +2,13 @@
 
 
 #include "TestManager.h"
+#include "JsonUtilities.h"
+#include "fstream"
+#include "../../../Source/Odyssey_Of_Tycho__/single_include/nlohmann/json.hpp"
 #include "TestQuestion.h"
+
+using json = nlohmann::json;
+
 // Sets default values
 ATestManager::ATestManager()
 {
@@ -17,11 +23,37 @@ void ATestManager::BeginPlay()
 {
 	Super::BeginPlay();
 	FString outMessage;
-	AddQuestion(ConstructQuestion(TEXT("How much gas does Spaceship needs to leave planet?"), TEXT("Spaceship"), { "10 tons", "20 tons", "depends on it's mass" }, 2), outMessage);
-	AddQuestion(ConstructQuestion(TEXT("How much does Spaceship cost?"), TEXT("Spaceship"), { "1'000 $", "20'000 $", "1'000'000 $" }, 2), outMessage);
-
+	LoadQuestionsFromJSON(TEXT("Source/Odyssey_Of_Tycho__/Public/Questions.json"), outMessage);
+	AddQuestion(ConstructQuestion(TEXT("How much gas does Spaceship needs to leave planet?"), TEXT("Spaceship"), L"BOBA ABOB", {"10 tons", "20 tons", "depends on it's mass"}, 2), outMessage);
+	AddQuestion(ConstructQuestion(TEXT("How much does Spaceship cost?"), TEXT("Spaceship"), L"BOBA ABOBBOBA ABOBBOBA ABOB", { "1'000 $", "20'000 $", "1'000'000 $" }, 2), outMessage);
 }
 
+void ATestManager::LoadQuestionsFromJSON(const FString& JsonFilePath, FString& outMessage)
+{
+	FString ProjectDir = FPaths::ProjectDir();
+	FString fullJsonFilePath = FPaths::Combine(ProjectDir, *JsonFilePath);
+	
+	std::ifstream file(*fullJsonFilePath);
+	if (!file.is_open()) {
+		outMessage = ATestQuestion::FormatErrorMessage(TEXT("Error: JSON: couldn't open file"));
+		return;
+	}
+	outMessage = ATestQuestion::FormatErrorMessage(TEXT("Opened JSON successfully"));
+	json data;
+	file >> data;
+	for (const auto& item : data) {
+		TArray<FString> answers_l = {};
+		for (const auto& answer : item["answers"]) {
+			answers_l.Add(answer.get<std::string>().c_str());
+		}
+		FString outMessage_l;
+		AddQuestion(ConstructQuestion(item["question"].get<std::string>().c_str(), item["theme"].get<std::string>().c_str(), item["paragraph"].get<std::string>().c_str(),
+							answers_l, item["right_answer_index"]), outMessage_l);
+		GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Cyan, item["theme"].get<std::string>().c_str());
+	}
+	FString JsonFileData;
+	GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Cyan, FString::Printf(TEXT("Function called to Open JSON")));
+}
 
 void ATestManager::GetQuestionByTheme(const FString& Theme, ATestQuestion*& outQuestion, FString& outMessage)
 {
@@ -40,13 +72,13 @@ void ATestManager::GetQuestionByTheme(const FString& Theme, ATestQuestion*& outQ
 			q->GetStatus(status);
 			if (t_Theme == Theme && !status) {
 				outQuestion = q;
-				outMessage = FString::Printf(MESSAGE_OK);
+				outMessage = ATestQuestion::FormatErrorMessage(MESSAGE_OK);
 
 				return;
 			}
 		}
 	}
-	outMessage = FString::Printf(TEXT("error: GetQuestionByTheme: No unsolved Question with theme \"%s\""), *Theme);
+	outMessage = ATestQuestion::FormatErrorMessage(FString::Printf(TEXT("error: GetQuestionByTheme: No unsolved Question with theme \"%s\""), *Theme));
 	return;
 
 }
@@ -67,23 +99,23 @@ ATestQuestion* ATestManager::GetQuestionPtrByTheme(const FString& Theme, FString
 			q->GetStatus(status);
 			if (t_Theme == Theme && !status) {
 
-				outMessage = FString::Printf(MESSAGE_OK);
+				outMessage = ATestQuestion::FormatErrorMessage(MESSAGE_OK);
 				return q;
 			}
 		}
 	}
-	outMessage = FString::Printf(TEXT("error: GetQuestionPtrByTheme: No Question with theme or unsolved %s"), *Theme);
+	outMessage = ATestQuestion::FormatErrorMessage(FString::Printf(TEXT("error: GetQuestionByTheme: No unsolved Question with theme \"%s\""), *Theme));
 	return nullptr;
 
 }
 void ATestManager::AddQuestion(ATestQuestion* newQuestion, FString& outMessage)
 {
 	if (!newQuestion) {
-		outMessage = FString::Printf(TEXT("error: AddQuestion: Invalid Question"));
+		outMessage = ATestQuestion::FormatErrorMessage(TEXT("error: AddQuestion: Invalid Question"));
 		return;
 	}
 	m_Questions.Add(newQuestion);
-	outMessage = FString::Printf(MESSAGE_OK);
+	outMessage = ATestQuestion::FormatErrorMessage(MESSAGE_OK);
 
 	return;
 }
@@ -130,19 +162,22 @@ void ATestManager::GetCurrentQuestion(ATestQuestion*& outQuestion, FString& outM
 {
 	if (currentQuestion) {
 		outQuestion = currentQuestion;
-		outMessage = FString::Printf(MESSAGE_OK);
+		outMessage = ATestQuestion::FormatErrorMessage(MESSAGE_OK);
 		return;
 	}
 	outQuestion = nullptr;
-	outMessage = FString::Printf(TEXT("error: CurrentQuestion: GET - no currentQuestion"));
+	outMessage = ATestQuestion::FormatErrorMessage(TEXT("error: CurrentQuestion: GET - no currentQuestion"));
 }
 
 void ATestManager::SetCurrentTheme(const FString& newTheme, FString& outMessage)
 {
+
 	outMessage = (newTheme != "") ? ATestQuestion::FormatErrorMessage(MESSAGE_OK) :
 		ATestQuestion::FormatErrorMessage(TEXT("error: Theme: SET - theme.len() < 0"));
+
 	if (outMessage == ATestQuestion::FormatErrorMessage(MESSAGE_OK))
 	{
+		GEngine->AddOnScreenDebugMessage(-1, 12.f, FColor::Yellow, newTheme);
 		m_Theme = newTheme;
 		ATestQuestion* newQ;
 		FString outM; FString outM_2;
@@ -168,24 +203,24 @@ void ATestManager::GetQuestions(TArray<ATestQuestion*>& outQuestions, FString& o
 {
 	if (m_Questions.Num() > 0) {
 		outQuestions = m_Questions;
-		outMessage = FString::Printf(MESSAGE_OK);
+		outMessage = ATestQuestion::FormatErrorMessage(MESSAGE_OK);
 	}
 	else {
-		outMessage = FString::Printf(TEXT("Error in GetQuestions: No questions"));
+		outMessage = ATestQuestion::FormatErrorMessage(TEXT("Error in GetQuestions: No questions"));
 	}
 
 }
 
-TObjectPtr<ATestQuestion> ATestManager::ConstructQuestion(const FString& newQuestion, const FString& newTheme, const TArray<FString>& newAnswers, int newRightAnswerIndex)
+TObjectPtr<ATestQuestion> ATestManager::ConstructQuestion(const FString& newQuestion, const FString& newTheme, const FString& newParagraph, const TArray<FString>& newAnswers, int newRightAnswerIndex)
 {
 	TObjectPtr<ATestQuestion> Question = NewObject<ATestQuestion>();
 	FString outMessage;
 	Question->SetQuestion(newQuestion, outMessage); // TODO: check outMessage
 	Question->SetTheme(newTheme, outMessage); // TODO: check outMessage
+	Question->SetParagraph(newParagraph, outMessage);// TODO: check outMessage
 	Question->SetStatus(false, outMessage); // TODO: check outMessage
 	Question->SetAnswers(newAnswers, outMessage); // TODO: check outMessage
 	Question->SetRightAnswerIndex(newRightAnswerIndex, outMessage); // TODO: check outMessage
-	AddQuestion(Question, outMessage);
 	return Question;
 }
 
