@@ -3,6 +3,7 @@
     "question": "Какая планета ближе всего к Солнцу?",
     "theme": "Солнечная система",
     "paragraph": "Солнечная система состоит из Солнца и объектов, которые вращаются вокруг него, таких как планеты, карликовые планеты, астероиды и кометы.",
+    "full_paragraph": "",
     "answers": [ "Меркурий", "Венера", "Земля", "Марс" ],
     "right_answer_index": 0
   },
@@ -10,6 +11,7 @@
     "question": "Какая звезда ближе всего к Солнцу?",
     "theme": "Звезды",
     "paragraph": "Ближайшая к Солнцу звезда - Проксима Центавра, находящаяся на расстоянии около 4,24 светового года от Солнца.",
+    "full_paragraph": "",
     "answers": [ "Проксима Центавра", "Альфа Центавра", "Сириус" ],
     "right_answer_index": 0
   },
@@ -17,14 +19,24 @@
     "question": "Какая звезда ближе всего к Солнцу?",
     "theme": "Звезды",
     "paragraph": "Ближайшая к Солнцу звезда - Проксима Центавра, находящаяся на расстоянии около 4,24 светового года от Солнца.",
+    "full_paragraph": "",
     "answers": [ "Проксима Центавра", "Альфа Центавра", "Сириус" ],
     "right_answer_index": 0
   },
   {
-    "question": "Как you doing?",
+    "question": "Right answer 1",
     "theme": "Spaceship",
-    "paragraph": "How - question. Are - glagol.",
-    "answers": [ "NIce", "Ok", "bad" ],
-    "right_answer_index": 2
+    "paragraph": "Short paragraph with summary to answer this question",
+    "full_paragraph": "Long version of paragraph",
+    "answers": [ "answer 1", "answer 2", "answer 3" ],
+    "right_answer_index": 0
+  },
+  {
+    "question": "Right answer 2",
+    "theme": "Spaceship",
+    "paragraph": "Short paragraph with summary to answer this question",
+    "full_paragraph": "Long version of paragraph",
+    "answers": [ "answer 1", "answer 2", "answer 3" ],
+    "right_answer_index": 1
   }
 ]

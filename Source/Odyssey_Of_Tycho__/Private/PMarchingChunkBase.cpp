@@ -52,10 +52,10 @@ float APMarchingChunkBase::CalculateValue(int x, int y, int z, FVector Pos) {
 	//float baseNoise = (Noise2->GetNoise(x + Position.X, y + Position.Y, z + Position.Z) + 1) / 2; // Базовый шум от 0 до 1
 	//float detailNoise = FMath::Abs(Noise3->GetNoise(x * 4 + Position.X, y * 4 + Position.Y, z * 4 + Position.Z)); // Детальный шум для создания расщелин и пещер
 	//float noise = baseNoise * 0.7f + detailNoise * 0.3f; // Комбинируем базовый и детальный шум
-	//if (!(distanceFromCenter <= (Planet->Radius - Planet->TerrainHeight))) {
+	if (!(distanceFromCenter <= (Planet->Radius - Planet->TerrainHeight))) {
 
 		float freq = Planet->Frequency2;
-		float amplitude = 2.f;
+		float amplitude = 1.f;
 		for (int i = 0; i < 4; i++) {
 			Noise2->SetFrequency(freq);
 			density += Noise2->GetNoise(x + Pos.X, y  + Pos.Y, z  + Pos.Z) * amplitude;
@@ -64,9 +64,9 @@ float APMarchingChunkBase::CalculateValue(int x, int y, int z, FVector Pos) {
 			amplitude *= 0.5;
 		}
 		density = density * (1.0f - distanceFromCenter / Planet->Radius);
-	//}
-	//else {
-		/*float freq = 0.02;
+	}
+	else {
+		float freq = 0.02;
 		float amplitude = 1.f;
 		for (int i = 0; i < 6; i++) {
 			Noise->SetFrequency(freq);
@@ -74,8 +74,8 @@ float APMarchingChunkBase::CalculateValue(int x, int y, int z, FVector Pos) {
 			freq *= 2;
 			amplitude *= 0.5;
 		}
-		density = density * (1.0f - distanceFromCenter / (Planet->Radius - Planet->TerrainHeight - 1));
-	}*/
+		density = (1.0f - distanceFromCenter / (Planet->Radius - Planet->TerrainHeight - 1));
+	}
 
 	// Вычисляем значение плотности воксела с использованием экспоненциального спада
 	// Ограничиваем значение плотности в диапазоне от 0 до 1
@@ -204,11 +204,11 @@ FLinearColor APMarchingChunkBase::setColorsToVertex(FVector v1, FVector Normal) 
 	// Выбираем произвольную вершину полигона
 	FVector PolygonCenter = v1;// FindPolygonCenter(v1, v2, v3);
 
-	/*float distance = FVector::Dist(this->GetActorLocation() + PolygonCenter, Planet->Origin);
-	if (distance < Planet->Radius - Planet->TerrainHeight + Planet->TerrainLevel_Water * (Planet->TerrainHeight))
+	float distance = FVector::Dist(this->GetActorLocation() + PolygonCenter, Planet->Origin);
+	if (distance <= Planet->Radius - Planet->TerrainHeight + Planet->TerrainLevel_Water * (Planet->TerrainHeight))
 	{
 		return Planet->TerrainColor_Water;
-	}*/
+	}
 	
 	FVector PolyCentToPlanetCenter = (this->GetActorLocation()+PolygonCenter)-Planet->Origin;
 	FVector PerpendicularVector = FVector::CrossProduct(Normal, PolyCentToPlanetCenter.GetSafeNormal());

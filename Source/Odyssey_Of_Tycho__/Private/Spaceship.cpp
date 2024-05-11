@@ -265,7 +265,7 @@ void ASpaceship::KeyPressedOne()
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(0, outMessage);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
 }
 void ASpaceship::KeyPressedTwo()
 {
@@ -273,7 +273,7 @@ void ASpaceship::KeyPressedTwo()
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(1, outMessage);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 2")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 2")));
 }
 void ASpaceship::KeyPressedThree()
 {
@@ -281,7 +281,7 @@ void ASpaceship::KeyPressedThree()
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(2, outMessage);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 3")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 3")));
 }
 
 void ASpaceship::LandingModeToggle()
@@ -300,8 +300,7 @@ void ASpaceship::LandingModeToggle()
 		/// => need to define landing zone =>
 		/// => if statement need to be redesigned with new landing zone component).
 		*/
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Turquoise,
-			FString::Printf(TEXT("Is In LandingMod: %i"), LandingMode));
+		//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Turquoise,FString::Printf(TEXT("Is In LandingMod: %i"), LandingMode));
 	}
 }
 

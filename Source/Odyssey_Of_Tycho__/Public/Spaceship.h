@@ -64,6 +64,7 @@ public:
 	ASpaceship();
 
 	void Set_Player(ATycho_Character* Player_);
+	UFUNCTION(BlueprintCallable)
 	ATycho_Character* Get_Player() const;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float DesiredYaw = 0;
@@ -79,7 +80,8 @@ protected:
 
 
 	void ExitSpaceShip();
-	ATycho_Character* Player = nullptr;
+	UPROPERTY()
+	TObjectPtr<ATycho_Character> Player = nullptr;
 
 	void BeginSpeedShift();
 	void EndSpeedShift();

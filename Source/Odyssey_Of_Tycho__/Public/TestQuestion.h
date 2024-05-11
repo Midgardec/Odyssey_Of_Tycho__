@@ -9,13 +9,13 @@
 
 #define DEFAULT_STR TEXT("_")
 #define MESSAGE_OK TEXT("OK")
-
+class ATestParagraph;
 UCLASS()
 class ODYSSEY_OF_TYCHO___API ATestQuestion : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	static FString FormatErrorMessage(const FString& ErrorMessage);
 	// Sets default values for this actor's properties
 	ATestQuestion();
@@ -24,44 +24,44 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	UFUNCTION(BlueprintCallable)
 	void GetQuestion(FString& outString, FString& outMessage);
 	UFUNCTION(BlueprintCallable)
 	void GetTheme(FString& outString, FString& outMessage);
-
-	UFUNCTION(BlueprintCallable)
-	void GetParagraph(FString& outString, FString& outMessage);
-
 	UFUNCTION(BlueprintCallable)
 	void GetAnswers(TArray<FString>& outArray, FString& outMessage);
 	UFUNCTION(BlueprintCallable)
 	void GetRightAnswerIndex(int& outIndex, FString& outMessage);
 	UFUNCTION(BlueprintCallable)
 	void GetStatus(bool& outStatus);
+	/*UFUNCTION(BlueprintCallable)
+	void GetParagraph(FString& outString, FString& outMessage);*/
+
 	UFUNCTION(BlueprintCallable)
 	void SetQuestion(const FString& newQ, FString& outMessage);
-
 	UFUNCTION(BlueprintCallable)
 	void SetTheme(const FString& newTheme, FString& outMessage);
-
 	UFUNCTION(BlueprintCallable)
 	void SetStatus(bool newStatus, FString& outMessage);
-
 	UFUNCTION(BlueprintCallable)
 	void SetAnswers(const TArray<FString>& Answers, FString& outMessage);
-
 	UFUNCTION(BlueprintCallable)
 	void SetRightAnswerIndex(int newIndex, FString& outMessage);
-
+	//
+	void SetParagraphPtr(TObjectPtr<ATestParagraph> newParagraph, FString& outMessage);
 	UFUNCTION(BlueprintCallable)
-	void SetParagraph(const FString& newParagraph, FString& outMessage);
+	void GetParagraphPtr(ATestParagraph*& outParagraph, FString& outMessage);
+	/*UFUNCTION(BlueprintCallable)
+	void SetParagraph(const FString& newParagraph, FString& outMessage);*/
 private:
 	bool m_Status = false;// 1 - solved; 0 - unsolved;
 	FString m_Theme = DEFAULT_STR;
 	FString m_Question = DEFAULT_STR;
-	FString m_Paragraph = DEFAULT_STR;
+	/*FString m_Paragraph = DEFAULT_STR;*/
 	TArray<FString> m_Answers = {};
 	int m_RightAnswerIndex = 0;
+	UPROPERTY()
+	TObjectPtr<ATestParagraph> m_ParagraphPtr;
 };

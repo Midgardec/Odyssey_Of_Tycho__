@@ -59,7 +59,7 @@ void ATycho_Character::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APetBot::StaticClass(), Pets);
 	if(GEngine)
 	{
-		GEngine->AddOnScreenDebugMessage(-1,15.f, FColor::Red, FString::Printf(TEXT("pets number : %i"),Pets.Num()));
+		//GEngine->AddOnScreenDebugMessage(-1,15.f, FColor::Red, FString::Printf(TEXT("pets number : %i"),Pets.Num()));
 	}
 	for (auto Pet : Pets)
 	{
@@ -81,6 +81,10 @@ void ATycho_Character::BeginPlay()
 	{
 		m_TestManager = Cast<ATestManager>(TM);
 	}
+	if (m_TestManager) {
+		m_TestManager->Set_Player(this);
+	}
+
 /// EventManager
 	TArray<AActor*> EventManagers;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATSEventManager::StaticClass(), EventManagers);
@@ -321,8 +325,9 @@ void ATycho_Character::KeyPressedOne()
 	FString outMessage;
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(0, outMessage);
+		
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
 }
 
 void ATycho_Character::KeyPressedTwo()
@@ -331,7 +336,7 @@ void ATycho_Character::KeyPressedTwo()
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(1, outMessage);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 2")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 2")));
 }
 
 void ATycho_Character::KeyPressedThree()
@@ -340,12 +345,23 @@ void ATycho_Character::KeyPressedThree()
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(2, outMessage);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 3")));
+	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 3")));
+}
+
+void ATycho_Character::AddCoins(int Amount)
+{
+	m_Coins += Amount;
+	m_Coins = FMath::Max(0, m_Coins);
+}
+
+void ATycho_Character::GetCoinsAmount(int& outCoins)
+{
+	outCoins = m_Coins;
 }
 
 void ATycho_Character::Collect()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, TEXT("Collecting"));
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::White, TEXT("Collecting"));
 	IsCollecting = true;
 }
 
@@ -354,7 +370,7 @@ void ATycho_Character::StopCollect()
 	IsCollecting = false;
 }
 
-long long ATycho_Character::Get_CurrentDrillObject_ID()
+long long ATycho_Character::Get_CurrentDrillObject_ID() const
 {
 	return CurrentDrillObject_ID;
 }
@@ -482,7 +498,7 @@ void ATycho_Character::SetTarget()
 	bool isHit = ActorLineTraceSingle(OutHit, Start, End, ECC_WorldStatic, QueryParams);
 	if (isHit)
 	{
-		GEngine->AddOnScreenDebugMessage(-1,15.f, FColor::Cyan, FString::Printf(TEXT("hit detected")));
+		//->AddOnScreenDebugMessage(-1,15.f, FColor::Cyan, FString::Printf(TEXT("hit detected")));
 	
 		DrawDebugSphere(GetWorld(), FVector(OutHit.Location), 3.f, 3, FColor::Red);
 		if (OutHit.GetActor())

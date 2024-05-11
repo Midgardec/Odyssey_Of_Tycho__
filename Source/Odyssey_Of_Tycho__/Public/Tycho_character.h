@@ -106,7 +106,7 @@ private:
 
 public:
 	UCameraComponent* GetCamera();
-	long long Get_CurrentDrillObject_ID();
+	long long Get_CurrentDrillObject_ID() const;
 	void Set_CurrentDrillObject_ID(long long Object_ID);
 	float Get_CurrentDrillObject_Distance() const;
 	void Set_CurrentDrillObject_Distance(const float CurrentDrillObject_Distance_ref);
@@ -143,11 +143,19 @@ public:
 	void KeyPressedOne();
 	void KeyPressedTwo();
 	void KeyPressedThree();
+
+	/// --- TestSystemBonuses;
+	void AddCoins(int Amount);
+	UFUNCTION(BlueprintCallable)
+	void GetCoinsAmount(int& outCoins);
 private:
 	/// TestManager
-	ATestManager* m_TestManager;
-	/// EventtManager
-	ATSEventManager* m_EventManager;
+	TObjectPtr<ATestManager> m_TestManager;
+	/// EventManager
+	TObjectPtr<ATSEventManager> m_EventManager;
+
+	/// Coins
+	int m_Coins = 0;
 public:
 	/// --------------------------------------- UE defaults
 
