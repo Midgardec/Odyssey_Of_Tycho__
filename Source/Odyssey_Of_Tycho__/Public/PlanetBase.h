@@ -105,6 +105,13 @@ public:
 	void GeneratePlanet(APChunkBase* ch);
 	void GeneratePlanetAsync();
 
+
+
+public:
+	UPROPERTY(EditInstanceOnly, Category = "Planet|Name")
+	FString Name = "Planet Default";
+	/*void GetPlanetName(FString& outName, FString& outMessage);
+	void SetPlanetName(const FString& newName, FString& outMessage);*/
 };
 class FAsyncChunkGenerator : public FNonAbandonableTask
 {

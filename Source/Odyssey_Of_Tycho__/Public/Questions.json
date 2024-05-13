@@ -38,5 +38,13 @@
     "full_paragraph": "Long version of paragraph",
     "answers": [ "answer 1", "answer 2", "answer 3" ],
     "right_answer_index": 1
+  },
+  {
+    "question": "Right answer 2",
+    "theme": "Gravity",
+    "paragraph": "Short paragraph with summary to answer this question",
+    "full_paragraph": "Long version of paragraph about gravity and many other things related to gravity. bla bla bla bla bla bla bla bla bla bla bla bla ",
+    "answers": [ "answer 1", "answer 2", "answer 3" ],
+    "right_answer_index": 1
   }
 ]
