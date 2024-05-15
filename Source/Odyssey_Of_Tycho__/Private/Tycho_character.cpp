@@ -9,6 +9,7 @@
 
 #include "TestManager.h"
 #include "TSEventManager.h"
+#include "TravelManager.h"
 // Sets default values
 ATycho_Character::ATycho_Character()
 {
@@ -57,15 +58,15 @@ void ATycho_Character::BeginPlay()
 
 	TArray<AActor*> Pets;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APetBot::StaticClass(), Pets);
-	if(GEngine)
+	if (GEngine)
 	{
 		//GEngine->AddOnScreenDebugMessage(-1,15.f, FColor::Red, FString::Printf(TEXT("pets number : %i"),Pets.Num()));
 	}
 	for (auto Pet : Pets)
 	{
-		if(APetBot* PetBot = Cast<APetBot>(Pet))
+		if (APetBot* PetBot = Cast<APetBot>(Pet))
 		{
-			if(!PetBot->Get_Player())
+			if (!PetBot->Get_Player())
 			{
 				PetBot->Set_Player(this);
 				PetFollower = PetBot;
@@ -73,7 +74,7 @@ void ATycho_Character::BeginPlay()
 			}
 		}
 	}
-/// TestManager
+	/// TestManager
 	TArray<AActor*> TestManagers;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATestManager::StaticClass(), TestManagers);
 
@@ -85,7 +86,7 @@ void ATycho_Character::BeginPlay()
 		m_TestManager->Set_Player(this);
 	}
 
-/// EventManager
+	/// EventManager
 	TArray<AActor*> EventManagers;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATSEventManager::StaticClass(), EventManagers);
 
@@ -100,7 +101,7 @@ void ATycho_Character::BeginPlay()
 void ATycho_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	if (!CanDrill) {
 		DrillTimer += DeltaTime;
 		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Cyan, FString::Printf(TEXT("Drill timer: %f"), DrillTimer));
@@ -232,14 +233,18 @@ void ATycho_Character::EnterSpaceShip()
 	{
 		if (Spaceship)
 		{
-			ASpaceship* Possess_Spaceship = StaticCast<ASpaceship*>(Spaceship);
-			Possess_Spaceship->Set_Player(this);
+			ASpaceship* Possessed_Spaceship = StaticCast<ASpaceship*>(Spaceship);
+			Possessed_Spaceship->Set_Player(this);
 			this->SetActorHiddenInGame(true);
 			this->SetActorEnableCollision(false);
 			//this->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			if (m_EventManager) { m_EventManager->ProcessEventType(EEventType::EventSpaceship);
-			UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(Possess_Spaceship);
-			 }
+			if (m_EventManager) {
+				m_EventManager->ProcessEventType(EEventType::EventSpaceship);
+				UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(Possessed_Spaceship);
+			}
+			Possessed_Spaceship->ProcessPossession();
+			
+			return;
 		}
 	}
 }
@@ -276,13 +281,13 @@ void ATycho_Character::StopDrill()
 	IsDrilling = false;
 }
 
-AActor* ATycho_Character::FindObjectToDrill() 
+AActor* ATycho_Character::FindObjectToDrill()
 {
 	TArray<AActor*> MineralObjects;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMineralObject::StaticClass(), MineralObjects);
 	AActor* ObjToDrill = nullptr;
 	float ObjMinDistance = DrillDistance + 0.5f;
-	for(auto MineralObj : MineralObjects)
+	for (auto MineralObj : MineralObjects)
 	{
 		float DistanceToObj = FVector::Distance(this->GetActorLocation(), MineralObj->GetActorLocation());
 
@@ -294,7 +299,7 @@ AActor* ATycho_Character::FindObjectToDrill()
 		}
 	}
 	/// DONE
-	/// TODO: find mineralObject[min(distance * cosineToForwVect]
+	/// TODO: find mineralObject[min(distance * cosineToForwVect)]
 	return ObjToDrill;
 }
 
@@ -325,7 +330,7 @@ void ATycho_Character::KeyPressedOne()
 	FString outMessage;
 	if (m_TestManager) {
 		m_TestManager->CheckRightAnswer(0, outMessage);
-		
+
 	}
 	//GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(TEXT("Pressed 1")));
 }
@@ -463,17 +468,17 @@ bool ATycho_Character::Get_CanCollect() const
 bool ATycho_Character::Add_Minerals(UClass* ClassType, float Amount)
 {
 	/*GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red,
-	                                 FString::Printf(
-		                                 TEXT("Materials Amount %i"), static_cast<int>(CollectedMaterials_ClassA)));
+									 FString::Printf(
+										 TEXT("Materials Amount %i"), static_cast<int>(CollectedMaterials_ClassA)));
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Cyan,
-	                                 FString::Printf(
-		                                 TEXT("Backpack Space left a %i"),
-		                                 static_cast<int>(Backpack_SpaceLeft - Amount)));*/
+									 FString::Printf(
+										 TEXT("Backpack Space left a %i"),
+										 static_cast<int>(Backpack_SpaceLeft - Amount)));*/
 
 	if (static_cast<int>(Backpack_SpaceLeft - Amount) < 0)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red,
-		                                 FString::Printf(TEXT("Can put in? %i"), static_cast<int>(false)));
+			FString::Printf(TEXT("Can put in? %i"), static_cast<int>(false)));
 		Set_CanCollect(false);
 		return false;
 	}
@@ -499,14 +504,14 @@ void ATycho_Character::SetTarget()
 	if (isHit)
 	{
 		//->AddOnScreenDebugMessage(-1,15.f, FColor::Cyan, FString::Printf(TEXT("hit detected")));
-	
+
 		DrawDebugSphere(GetWorld(), FVector(OutHit.Location), 3.f, 3, FColor::Red);
 		if (OutHit.GetActor())
 		{
 			PetFollower->Set_Target(Cast<AActor>(OutHit.GetActor()));
 		}
 
-		
+
 	}
 }
 

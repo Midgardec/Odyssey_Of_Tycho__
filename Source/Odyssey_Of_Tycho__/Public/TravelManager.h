@@ -35,7 +35,12 @@ private:
 	UPROPERTY()
 	float m_Distance;
 	UPROPERTY()
-	float m_Velocity;
+	float m_ApproachSpeed;
+	UPROPERTY()
+	FVector m_HorizontalVelocity;
+	UPROPERTY()
+	FVector m_VerticalVelocity;
+
 	UPROPERTY()
 	TObjectPtr<ASpaceship> m_Spaceship;
 	UPROPERTY()
@@ -43,7 +48,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetFocusedPlanet(APlanetBase*& OutFocusedPlanet, FString& OutMessage);
+	void SetFocusedPlanet(APlanetBase* OutFocusedPlanet, FString& OutMessage);
 
 	UFUNCTION(BlueprintCallable)
 	void CalculateDistance(FString& OutMessage);
@@ -60,11 +65,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GetDistance(float& Distance, FString& OutMessage);
 	UFUNCTION(BlueprintCallable)
-	void GetSpaceshipVelocity(float& Velocity, FString& OutMessage);
+	void GetSpaceshipApproachSpeed(float& ApproachSpeed, FString& OutMessage);
+	UFUNCTION(BlueprintCallable)
+	void GetSpaceshipHorizontalVelocity(FVector& HorizontalVelocity, FString& OutMessage);
+	UFUNCTION(BlueprintCallable)
+	void GetSpaceshipVerticalVelocity(FVector& VerticalVelocity, FString& OutMessage);
 	UFUNCTION(BlueprintCallable)
 	void GetFocusedPlanet(APlanetBase*& FocusedPlanet, FString& OutMessage);
 	UFUNCTION(BlueprintCallable)
 	void GetPlayerSpaceship(ASpaceship*& Spaceship, FString& OutMessage);
 	UFUNCTION(BlueprintCallable)
 	bool GetPermissionToFlight();
+	UFUNCTION(BlueprintCallable)
+	void GetFocusedPlanetName(FString& FocusedPlanetName, FString& OutMessage);
+
 };

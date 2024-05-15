@@ -9,6 +9,7 @@
 
 #include "TestManager.h"
 #include "TSEventManager.h"
+#include "TravelManager.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -65,7 +66,7 @@ void ASpaceship::BeginPlay()
 {
 	Super::BeginPlay();
 
-/// TestManager
+	/// TestManager
 	TArray<AActor*> TestManagers;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATestManager::StaticClass(), TestManagers);
 
@@ -73,7 +74,7 @@ void ASpaceship::BeginPlay()
 	{
 		m_TestManager = Cast<ATestManager>(TM);
 	}
-/// EventManager
+	/// EventManager
 	TArray<AActor*> EventManagers;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATSEventManager::StaticClass(), EventManagers);
 
@@ -88,6 +89,20 @@ void ASpaceship::ExitSpaceShip()
 	if (!Player)
 	{
 		return;
+	}
+	TArray<AActor*> TravelManagers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATravelManager::StaticClass(), TravelManagers);
+	for (auto tm : TravelManagers) {
+		if (tm) {
+			ATravelManager* level_travelManager = StaticCast<ATravelManager*>(tm);
+			FString MES_SET_SPCSHP;
+			level_travelManager->SetSpaceship(nullptr, MES_SET_SPCSHP);
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Yellow, MES_SET_SPCSHP);
+			break;
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(L"all bad"));
+		}
 	}
 	Player->SetActorHiddenInGame(false);
 	Player->SetActorEnableCollision(true);
@@ -251,7 +266,7 @@ void ASpaceship::Tick(float DeltaTime)
 	RotationStabilization();
 
 
-	
+
 	//MeshComponent->SetWorldRotation(FMath::RInterpTo(MeshComponent->GetRelativeRotation(), MeshComponent->GetRelativeRotation() + newRotation, DeltaTime,5));
 
 
@@ -330,5 +345,24 @@ void ASpaceship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("key1", IE_Pressed, this, &ASpaceship::KeyPressedOne);
 	PlayerInputComponent->BindAction("key2", IE_Pressed, this, &ASpaceship::KeyPressedTwo);
 	PlayerInputComponent->BindAction("key3", IE_Pressed, this, &ASpaceship::KeyPressedThree);
+
+}
+
+void ASpaceship::ProcessPossession()
+{
+	TArray<AActor*> TravelManagers;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATravelManager::StaticClass(), TravelManagers);
+	for (auto tm : TravelManagers) {
+		if (tm) {
+			ATravelManager* level_travelManager = StaticCast<ATravelManager*>(tm);
+			FString MES_SET_SPCSHP;
+			level_travelManager->SetSpaceship(this, MES_SET_SPCSHP);
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, MES_SET_SPCSHP);
+			break;
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, FString::Printf(L"all bad"));
+		}
+	}
 
 }
